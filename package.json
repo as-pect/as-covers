@@ -9,6 +9,7 @@
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "assemblyscript": "^0.18.31",
     "lerna": "^4.0.0"
   }
 }

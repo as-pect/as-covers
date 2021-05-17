@@ -1,0 +1,14 @@
+{
+  "name": "@as-covers/transform",
+  "version": "0.0.0",
+  "description": "The transform that enables code coverage for assemblyscript",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "node test/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  }
+}
