@@ -7,14 +7,14 @@ This package transforms your software, adding some assemblyscript calls to the h
 Any if statements will have the following lines injected into your source code:
 
 ```ts
-__coverReportConditional(fileName, line, col, 0);
-__coverReportConditional(fileName, line2, col2, 1);
+__coverReportBlock(fileName, line, col, 0);
+__coverReportBlock(fileName, line2, col2, 1);
 
 if (condition) {
-  __coverConditional(0);
+  __coverBlock(0);
   // one branch
 } else {
-  __coverConditional(1);
+  __coverBlock(1);
  // another branch
 }
 ```
@@ -37,12 +37,12 @@ function b(): void {
 # ternary expressions
 
 ```ts
-__coverReportConditional(fileName, line, col, 0);
-__coverReportConditional(fileName, line2, col2, 1);
+__coverReportExpression(fileName, line, col, 0);
+__coverReportExpression(fileName, line2, col2, 1);
 
 let val = condition
-  ? __coverConditional(0, truthyValue)
-  : __coverConditional(1, falsyValue);
+  ? __coverExpression(0, truthyValue)
+  : __coverExpression(1, falsyValue);
 ```
 
 # Boolean Expressions
@@ -54,8 +54,40 @@ if (a && b) {
 }
 
 // turns into
-__coverReportConditional(fileName, line, col, 0);
-if (a && __coverConditional(0, b)) {
+__coverReportExpression(fileName, line, col, 0);
+if (a && __coverExpression(0, b)) {
   // something
+}
+```
+
+# while and for loops
+
+```ts
+__coverReportBlock(fileName, line, col, 0);
+__coverReportBlock(fileName, line2, col2, 1);
+
+for (let i = 0; i < 100; i++) {
+  __coverBlock(0);
+}
+
+while (true) {
+  break;
+}
+```
+
+# Switch Case
+
+```ts
+__coverReportBlock(fileName, line, col, 0);
+__coverReportBlock(fileName, line2, col2, 1);
+__coverReportBlock(fileName, line3, col3, 2);
+
+switch (expression) {
+  case a:
+    __coverBlock(0);
+  case b:
+    __coverBlock(1);
+  default:
+    __coverBlock(2);
 }
 ```
