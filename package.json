@@ -1,0 +1,14 @@
+{
+  "name": "as-covers",
+  "version": "0.0.1",
+  "description": "Code coverage transform for AssemblyScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}
