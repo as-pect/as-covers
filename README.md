@@ -41,8 +41,8 @@ __coverReportExpression(fileName, line, col, 0);
 __coverReportExpression(fileName, line2, col2, 1);
 
 let val = condition
-  ? __coverExpression(0, truthyValue)
-  : __coverExpression(1, falsyValue);
+  ? __coverExpression(truthyValue, 0)
+  : __coverExpression(falsyValue, 1);
 ```
 
 # Boolean Expressions
@@ -71,6 +71,7 @@ for (let i = 0; i < 100; i++) {
 }
 
 while (true) {
+  __coverBlock(1);
   break;
 }
 ```

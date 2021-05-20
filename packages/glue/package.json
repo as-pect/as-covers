@@ -1,0 +1,14 @@
+{
+  "name": "@as-covers/glue",
+  "version": "0.0.0",
+  "description": "Glue code for code coverage using node.js",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@assemblyscript/loader": "^0.18.31"
+  }
+}
