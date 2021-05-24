@@ -63,7 +63,6 @@ export class Covers {
       index.push(cover[1]);
     }
     let fileList = Object.keys(files);
-    
     return `
 ${line}
 Columns Go Here
