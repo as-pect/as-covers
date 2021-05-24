@@ -9,7 +9,11 @@
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^15.6.0",
     "assemblyscript": "^0.18.31",
     "lerna": "^4.0.0"
+  },
+  "dependencies": {
+    "line-column": "^1.0.2"
   }
 }
