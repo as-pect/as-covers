@@ -77,13 +77,12 @@ var Covers = /** @class */ (function () {
             }
             finally { if (e_1) throw e_1.error; }
         }
-        var fileList = Object.keys(files);
         try {
             for (var _e = __values(this.coverPoints.entries()), _f = _e.next(); !_f.done; _f = _e.next()) {
                 var entry = _f.value;
                 result += (entry[1].file + ":" + entry[1].line + ":" + entry[1].col + "\n").blue;
                 result += ("ID: " + entry[1].id.toString() + "\n").gray;
-                result += ("Type: " + entry[1].type.toString() + "\n").gray;
+                result += ("Type: " + fromEnum(entry[1].type) + "\n").gray;
                 result += ("Covered: " + entry[1].covered + "\n").gray;
             }
         }
@@ -99,4 +98,18 @@ var Covers = /** @class */ (function () {
     return Covers;
 }()); //Overall %, Block %, Function %, Expression %, Remaining
 exports.Covers = Covers;
+function fromEnum(enu) {
+    if (enu === 1 /* Block */) {
+        return 'Block';
+    }
+    else if (enu === 2 /* Expression */) {
+        return 'Expression';
+    }
+    else if (enu === 0 /* Function */) {
+        return 'Function';
+    }
+    else {
+        return 'Unknown';
+    }
+}
 //# sourceMappingURL=index.js.map

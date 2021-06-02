@@ -20,7 +20,7 @@ export class CoverPoint {
     public col: number,
     public id: number,
     public type: CoverPointType,
-  ) {}
+  ) { }
 }
 
 export class Covers {
@@ -68,13 +68,25 @@ export class Covers {
       const index = files[file] = files[file] || [];
       index.push(cover[1]);
     }
-    let fileList = Object.keys(files);
+
     for (const entry of this.coverPoints.entries()) {
       result += `${entry[1].file}:${entry[1].line}:${entry[1].col}\n`.blue
       result += `ID: ${entry[1].id.toString()}\n`.gray
-      result += `Type: ${entry[1].type.toString()}\n`.gray
+      result += `Type: ${fromEnum(entry[1].type)}\n`.gray
       result += `Covered: ${entry[1].covered}\n`.gray
     }
     return result
   }
 }//Overall %, Block %, Function %, Expression %, Remaining
+
+function fromEnum(enu: CoverPointType): string {
+  if (enu === CoverPointType.Block) {
+    return 'Block'
+  } else if (enu === CoverPointType.Expression) {
+    return 'Expression'
+  } else if (enu === CoverPointType.Function) {
+    return 'Function'
+  } else {
+    return 'Unknown'
+  }
+}
