@@ -1,4 +1,4 @@
-import { ASUtil } from "@assemblyscript/loader";
+import { ASUtil, instantiateSync } from "@assemblyscript/loader";
 
 export const enum CoverPointType {
   Function,
@@ -24,7 +24,9 @@ export class CoverPoint {
 export class Covers {
   private coverPoints = new Map<number, CoverPoint>();
   // @ts-ignore
-  private loader: ASUtil;
+  private loader: Object = {
+    exports:
+  }
 
   installImports(imports: any): any {
     imports.__asCovers = {
@@ -39,7 +41,7 @@ export class Covers {
   }
 
   private coverDeclare(filePtr: number, line: number, col: number, id: number, coverType: CoverPointType): void {
-    let coverPoint = new CoverPoint(this.loader.__getString(filePtr), line, col, id, coverType);
+    let coverPoint = new CoverPoint(this.loader!.exports.__getString(filePtr), line, col, id, coverType);
     if (this.coverPoints.has(id)) throw new Error("Cannot add dupliate cover point.");
     this.coverPoints.set(id, coverPoint);
   }

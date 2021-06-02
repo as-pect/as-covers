@@ -5,7 +5,7 @@
   Expression,
 }
 // @ts-ignore: external annotation
-@external("__asCovers", "coverDeclare")
+@global @external("__asCovers", "coverDeclare")
 declare function __coverDeclare(file: string, id: u32, line: i32, col: i32, coverType: CoverType): void;
 // @ts-ignore: global annotation
 @global @external("__asCovers", "cover")
