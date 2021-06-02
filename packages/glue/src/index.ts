@@ -1,3 +1,5 @@
+import 'colors'
+
 import { ASUtil, instantiateSync } from "@assemblyscript/loader";
 
 export const enum CoverPointType {
@@ -24,9 +26,7 @@ export class CoverPoint {
 export class Covers {
   private coverPoints = new Map<number, CoverPoint>();
   // @ts-ignore
-  private loader: Object = {
-    exports:
-  }
+  private loader: ASUtil
 
   installImports(imports: any): any {
     imports.__asCovers = {
@@ -40,16 +40,19 @@ export class Covers {
     this.loader = loader;
   }
 
-  private coverDeclare(filePtr: number, line: number, col: number, id: number, coverType: CoverPointType): void {
-    let coverPoint = new CoverPoint(this.loader!.exports.__getString(filePtr), line, col, id, coverType);
+  private coverDeclare(filePtr: number, id: number, line: number, col: number, coverType: CoverPointType): void {
+    const filePath = this.loader!.exports.__getString(filePtr)
+    let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
     if (this.coverPoints.has(id)) throw new Error("Cannot add dupliate cover point.");
     this.coverPoints.set(id, coverPoint);
+    this.coversExpected++
   }
 
   private cover(id: number): void {
     if (!this.coverPoints.has(id)) throw new Error("Cannot cover point that does not exist.");
     let coverPoint = this.coverPoints.get(id)!;
     coverPoint.covered = true;
+    this.coversExecuted++
   }
 
   public reset(): void {
@@ -57,6 +60,7 @@ export class Covers {
   }
 
   public stringify(config: CoverageRenderConfiguration): string {
+    let result = ''
     const line = "=".repeat(config.width);
     const files: Record<string, Array<CoverPoint>> = {};
     for (const cover of this.coverPoints) {
@@ -65,11 +69,12 @@ export class Covers {
       index.push(cover[1]);
     }
     let fileList = Object.keys(files);
-    return `
-${line}
-Columns Go Here
-${line}
-One Line Per File
-`;
+    for (const entry of this.coverPoints.entries()) {
+      result += `${entry[1].file}:${entry[1].line}:${entry[1].col}\n`.blue
+      result += `ID: ${entry[1].id.toString()}\n`.gray
+      result += `Type: ${entry[1].type.toString()}\n`.gray
+      result += `Covered: ${entry[1].covered}\n`.gray
+    }
+    return result
   }
-}
+}//Overall %, Block %, Function %, Expression %, Remaining

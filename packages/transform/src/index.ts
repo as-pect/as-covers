@@ -41,12 +41,12 @@ class CoverTransform extends BaseVisitor {
   }
 
   visitTernaryExpression(expr: TernaryExpression): void {
-    const coverId = this.id++
+    /*const coverId = this.id++
     const truthy = expr.ifThen
     const truthyReplacement: CallExpression = SimpleParser.parseExpression(`__coverExpression($$REPLACE_ME, ${coverId})`)
     const source = truthyReplacement.range.source
     //truthy.args[0] = ifThen
-    super.visitTernaryExpression(expr)
+    super.visitTernaryExpression(expr)*/
   }
 
   visitSwitchCase(stmt: SwitchCase): void {
@@ -83,14 +83,16 @@ export = class MyTransform extends Transform {
   afterParse(parser: Parser): void {
     const transformer = new CoverTransform()
     for (const source of parser.sources) {
-      if (!source.isLibrary) {
+      if (!source.isLibrary && !source.internalPath.startsWith(`~lib/`)) {
         transformer.visit(source)
+        console.log('!lib', source.internalPath)
       }
     }
     let i = 0
     for (const source of transformer.sources) {
       source.internalPath += `${i++}.ts`;
       parser.sources.push(source)
+      console.log(source.internalPath)
       // Modify file names (incremental)
     }
   }

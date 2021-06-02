@@ -12,6 +12,7 @@ var __values = (this && this.__values) || function(o) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Covers = exports.CoverPoint = void 0;
+require("colors");
 var CoverPoint = /** @class */ (function () {
     function CoverPoint(file, line, col, id, type) {
         this.file = file;
@@ -38,28 +39,32 @@ var Covers = /** @class */ (function () {
     Covers.prototype.registerLoader = function (loader) {
         this.loader = loader;
     };
-    Covers.prototype.coverDeclare = function (filePtr, line, col, id, coverType) {
-        var coverPoint = new CoverPoint(this.loader.exports.__getString(filePtr), line, col, id, coverType);
+    Covers.prototype.coverDeclare = function (filePtr, id, line, col, coverType) {
+        var filePath = this.loader.exports.__getString(filePtr);
+        var coverPoint = new CoverPoint(filePath, line, col, id, coverType);
         if (this.coverPoints.has(id))
             throw new Error("Cannot add dupliate cover point.");
         this.coverPoints.set(id, coverPoint);
+        this.coversExpected++;
     };
     Covers.prototype.cover = function (id) {
         if (!this.coverPoints.has(id))
             throw new Error("Cannot cover point that does not exist.");
         var coverPoint = this.coverPoints.get(id);
         coverPoint.covered = true;
+        this.coversExecuted++;
     };
     Covers.prototype.reset = function () {
         this.coverPoints.clear();
     };
     Covers.prototype.stringify = function (config) {
-        var e_1, _a;
+        var e_1, _a, e_2, _b;
+        var result = '';
         var line = "=".repeat(config.width);
         var files = {};
         try {
-            for (var _b = __values(this.coverPoints), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var cover = _c.value;
+            for (var _c = __values(this.coverPoints), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var cover = _d.value;
                 var file = cover[1].file;
                 var index = files[file] = files[file] || [];
                 index.push(cover[1]);
@@ -68,14 +73,30 @@ var Covers = /** @class */ (function () {
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
             }
             finally { if (e_1) throw e_1.error; }
         }
         var fileList = Object.keys(files);
-        return "\n" + line + "\nColumns Go Here\n" + line + "\nOne Line Per File\n";
+        try {
+            for (var _e = __values(this.coverPoints.entries()), _f = _e.next(); !_f.done; _f = _e.next()) {
+                var entry = _f.value;
+                result += (entry[1].file + ":" + entry[1].line + ":" + entry[1].col + "\n").blue;
+                result += ("ID: " + entry[1].id.toString() + "\n").gray;
+                result += ("Type: " + entry[1].type.toString() + "\n").gray;
+                result += ("Covered: " + entry[1].covered + "\n").gray;
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        return result;
     };
     return Covers;
-}());
+}()); //Overall %, Block %, Function %, Expression %, Remaining
 exports.Covers = Covers;
 //# sourceMappingURL=index.js.map

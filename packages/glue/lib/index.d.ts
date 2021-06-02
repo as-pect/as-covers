@@ -1,3 +1,4 @@
+import 'colors';
 import { ASUtil } from "@assemblyscript/loader";
 export declare const enum CoverPointType {
     Function = 0,
