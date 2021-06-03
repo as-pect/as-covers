@@ -1,5 +1,5 @@
 // @ts-ignore
-import table from 'text-table'
+import { table } from 'table'
 
 import { ASUtil } from "@assemblyscript/loader";
 
@@ -150,7 +150,6 @@ export class Covers {
     const report = this.createReport()
     return table([
       ['File', 'Total', 'Block', 'Func', 'Expr', 'Uncovered'],
-      ['_', '_', '_', '_', '_', '_'],
       ...Array.from(report).map(([file, rep]) => {
         const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered)
         return [

@@ -31,13 +31,10 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
         to[j] = from[i];
     return to;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Covers = exports.CoverPoint = exports.CoverPointType = void 0;
 // @ts-ignore
-var text_table_1 = __importDefault(require("text-table"));
+var table_1 = require("table");
 var linecol = function (point) { return point.line + ":" + point.col; };
 var CoverPointType;
 (function (CoverPointType) {
@@ -208,9 +205,8 @@ var Covers = /** @class */ (function () {
     };
     Covers.prototype.stringify = function () {
         var report = this.createReport();
-        return text_table_1.default(__spreadArray([
-            ['File', 'Total', 'Block', 'Func', 'Expr', 'Uncovered'],
-            ['_', '_', '_', '_', '_', '_']
+        return table_1.table(__spreadArray([
+            ['File', 'Total', 'Block', 'Func', 'Expr', 'Uncovered']
         ], __read(Array.from(report).map(function (_a) {
             var _b = __read(_a, 2), file = _b[0], rep = _b[1];
             var uncoveredPoints = rep.coverPoints.filter(function (val) { return !val.covered; });
