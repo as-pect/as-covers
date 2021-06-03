@@ -1,9 +1,11 @@
-import 'colors'
+// @ts-ignore
+import table from 'text-table'
 
-import { ASUtil, instantiateSync } from "@assemblyscript/loader";
+import { ASUtil } from "@assemblyscript/loader";
+
+const linecol = (point: CoverPoint) => `${point.line}:${point.col}`
 
 export enum CoverPointType {
-  none,
   Function,
   Block,
   Expression,
@@ -24,14 +26,74 @@ export class CoverPoint {
   ) { }
 }
 
+class CoverPointReport {
+  public coverPoints: CoverPoint[] = []
+  private calculated: boolean = false
+  private total: number = 0
+  private totalCovered: number = 0
+  private expressionTotal: number = 0
+  private expressionCovered: number = 0
+  private blockTotal: number = 0
+  private blockCovered: number = 0
+  private functionTotal: number = 0
+  private functionCovered: number = 0
+  private calculateStats(): void {
+    if (this.calculated) {
+      return
+    }
+    for (const point of this.coverPoints) {
+      const covered = point.covered ? 1 : 0
+      this.total++
+      this.totalCovered += covered
+      switch (point.type) {
+        case CoverPointType.Expression: {
+          this.expressionTotal++
+          this.expressionCovered += covered
+          break
+        }
+        case CoverPointType.Block: {
+          this.blockTotal++
+          this.blockCovered += covered
+          break
+        }
+        case CoverPointType.Function: {
+          this.functionTotal++
+          this.functionCovered += covered
+          break
+        }
+      }
+    }
+    this.calculated = true
+  }
+  constructor(public fileName: string) {
+  }
+  public get coveredPercent(): number {
+    this.calculateStats()
+    if (this.totalCovered === 0) return 100
+    return Math.round(10 * (this.totalCovered / this.total) * 100) / 10
+  }
+  public get coveredBlockPercent(): number {
+    this.calculateStats()
+    if (this.blockTotal === 0) return 100
+    return Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10
+  }
+  public get coveredExpressionPercent(): number {
+    this.calculateStats()
+    if (this.expressionTotal === 0) return 100
+    return Math.round(10 * (this.expressionCovered / this.expressionTotal) * 100) / 10
+  }
+  public get coveredFunctionPercent(): number {
+    this.calculateStats()
+    if (this.functionTotal === 0) return 100
+    return Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10
+  }
+
+}
+
 export class Covers {
   private coverPoints = new Map<number, CoverPoint>();
   // @ts-ignore
   private loader: ASUtil
-
-  private coversExecuted = 0
-
-  private coversExpected = 0
 
   installImports(imports: any): any {
     imports.__asCovers = {
@@ -50,86 +112,59 @@ export class Covers {
     let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
     if (this.coverPoints.has(id)) throw new Error("Cannot add dupliate cover point.");
     this.coverPoints.set(id, coverPoint);
-    this.coversExpected++
   }
 
   private cover(id: number): void {
     if (!this.coverPoints.has(id)) throw new Error("Cannot cover point that does not exist.");
     let coverPoint = this.coverPoints.get(id)!;
     coverPoint.covered = true;
-    this.coversExecuted++
   }
 
   public reset(): void {
     this.coverPoints.clear();
   }
 
-  public stringify(config: CoverageRenderConfiguration): string {
-    let result = ''
-    const line = "=".repeat(config.width);
-    const files: Record<string, Array<CoverPoint>> = {};
-    const fileData = new Map<string, {
-      expected: 0,
-      executed: 0,
-      data: Array<CoverPoint>
-    }>()
+  public createReport(): Map<string, CoverPointReport> {
 
-    for (const cover of this.coverPoints) {
-      const { file } = cover[1];
-      const index = files[file] = files[file] || [];
-      index.push(cover[1]);
+    const results = new Map<string, CoverPointReport>()
 
-      if (!fileData.has(file)) fileData.set(file, {
-        expected: 0,
-        executed: 0,
-        data: Array<CoverPoint>()
+    for (const [_, coverPoint] of this.coverPoints) {
+
+      const fileName = coverPoint.file
+
+      if (!results.has(fileName)) results.set(fileName, new CoverPointReport(fileName))
+      // Ensure it exists
+
+      const report = results.get(fileName)!
+      // Grab report
+
+      report.coverPoints.push(coverPoint)
+
+    }
+
+    return results
+
+  }
+
+  public stringify(): string {
+    const report = this.createReport()
+    return table([
+      ['File', 'Total', 'Block', 'Func', 'Expr', 'Uncovered'],
+      ['_', '_', '_', '_', '_', '_'],
+      ...Array.from(report).map(([file, rep]) => {
+        const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered)
+        return [
+          file,
+          `${rep.coveredPercent}%`,
+          `${rep.coveredBlockPercent}%`,
+          `${rep.coveredFunctionPercent}%`,
+          `${rep.coveredExpressionPercent}%`,
+          uncoveredPoints.length > 6
+            ? `${uncoveredPoints.slice(0, 6).map(linecol).join(', ')},...`
+            : uncoveredPoints.map(linecol).join(', ')
+        ]
       })
-      // Ensure all files are stored
+    ])
 
-      const fdata = fileData.get(file)
-
-      // @ts-ignore.
-      if (cover[1].covered) {
-        // @ts-ignore
-        fdata.executed++
-      }
-
-      // @ts-ignore.
-      fdata.expected++
-
-      // @ts-ignore
-      fdata.data.push(cover[1])
-
-    }
-
-    result += `\n\nAS-Covers Results\n`.blue
-
-    result += `=================\n\n`.gray
-
-    for (const [file, data] of fileData.entries()) {
-      
-      result += `${file} - Results\n`.blue
-      result += ` - Expected: ${data.expected}\n`.gray
-      result += ` - Executed: ${data.executed}\n`.gray
-      result += ` - Coverage: ${Math.round(100*(data.executed / data.expected) * 100) / 100}\n`.gray
-
-    }
-
-    result += `\n`
-    result += `Total Expected: ${this.coversExpected}\n`.blue
-    result += `Total Executed: ${this.coversExecuted}\n`.blue
-    result += `Total Coverage: ${Math.round(100*(this.coversExecuted / this.coversExpected) * 100)/100}%\n`.blue
-
-    return result
   }
-}//Overall %, Block %, Function %, Expression %, Remaining
-
-function fromEnum(value: any): string {
-  let res = ''
-  for (const key in CoverPointType) {
-    if (CoverPointType[key] === value) {
-      return res = key
-    }
-  }
-  return res
 }

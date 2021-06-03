@@ -26,15 +26,24 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Covers = exports.CoverPoint = exports.CoverPointType = void 0;
-require("colors");
+// @ts-ignore
+var text_table_1 = __importDefault(require("text-table"));
+var linecol = function (point) { return point.line + ":" + point.col; };
 var CoverPointType;
 (function (CoverPointType) {
-    CoverPointType[CoverPointType["none"] = 0] = "none";
-    CoverPointType[CoverPointType["Function"] = 1] = "Function";
-    CoverPointType[CoverPointType["Block"] = 2] = "Block";
-    CoverPointType[CoverPointType["Expression"] = 3] = "Expression";
+    CoverPointType[CoverPointType["Function"] = 0] = "Function";
+    CoverPointType[CoverPointType["Block"] = 1] = "Block";
+    CoverPointType[CoverPointType["Expression"] = 2] = "Expression";
 })(CoverPointType = exports.CoverPointType || (exports.CoverPointType = {}));
 var CoverPoint = /** @class */ (function () {
     function CoverPoint(file, line, col, id, type) {
@@ -48,11 +57,104 @@ var CoverPoint = /** @class */ (function () {
     return CoverPoint;
 }());
 exports.CoverPoint = CoverPoint;
+var CoverPointReport = /** @class */ (function () {
+    function CoverPointReport(fileName) {
+        this.fileName = fileName;
+        this.coverPoints = [];
+        this.calculated = false;
+        this.total = 0;
+        this.totalCovered = 0;
+        this.expressionTotal = 0;
+        this.expressionCovered = 0;
+        this.blockTotal = 0;
+        this.blockCovered = 0;
+        this.functionTotal = 0;
+        this.functionCovered = 0;
+    }
+    CoverPointReport.prototype.calculateStats = function () {
+        var e_1, _a;
+        if (this.calculated) {
+            return;
+        }
+        try {
+            for (var _b = __values(this.coverPoints), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var point = _c.value;
+                var covered = point.covered ? 1 : 0;
+                this.total++;
+                this.totalCovered += covered;
+                switch (point.type) {
+                    case CoverPointType.Expression: {
+                        this.expressionTotal++;
+                        this.expressionCovered += covered;
+                        break;
+                    }
+                    case CoverPointType.Block: {
+                        this.blockTotal++;
+                        this.blockCovered += covered;
+                        break;
+                    }
+                    case CoverPointType.Function: {
+                        this.functionTotal++;
+                        this.functionCovered += covered;
+                        break;
+                    }
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        this.calculated = true;
+    };
+    Object.defineProperty(CoverPointReport.prototype, "coveredPercent", {
+        get: function () {
+            this.calculateStats();
+            if (this.totalCovered === 0)
+                return 100;
+            return Math.round(10 * (this.totalCovered / this.total) * 100) / 10;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(CoverPointReport.prototype, "coveredBlockPercent", {
+        get: function () {
+            this.calculateStats();
+            if (this.blockTotal === 0)
+                return 100;
+            return Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(CoverPointReport.prototype, "coveredExpressionPercent", {
+        get: function () {
+            this.calculateStats();
+            if (this.expressionTotal === 0)
+                return 100;
+            return Math.round(10 * (this.expressionCovered / this.expressionTotal) * 100) / 10;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(CoverPointReport.prototype, "coveredFunctionPercent", {
+        get: function () {
+            this.calculateStats();
+            if (this.functionTotal === 0)
+                return 100;
+            return Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return CoverPointReport;
+}());
 var Covers = /** @class */ (function () {
     function Covers() {
         this.coverPoints = new Map();
-        this.coversExecuted = 0;
-        this.coversExpected = 0;
     }
     Covers.prototype.installImports = function (imports) {
         imports.__asCovers = {
@@ -70,90 +172,61 @@ var Covers = /** @class */ (function () {
         if (this.coverPoints.has(id))
             throw new Error("Cannot add dupliate cover point.");
         this.coverPoints.set(id, coverPoint);
-        this.coversExpected++;
     };
     Covers.prototype.cover = function (id) {
         if (!this.coverPoints.has(id))
             throw new Error("Cannot cover point that does not exist.");
         var coverPoint = this.coverPoints.get(id);
         coverPoint.covered = true;
-        this.coversExecuted++;
     };
     Covers.prototype.reset = function () {
         this.coverPoints.clear();
     };
-    Covers.prototype.stringify = function (config) {
-        var e_1, _a, e_2, _b;
-        var result = '';
-        var line = "=".repeat(config.width);
-        var files = {};
-        var fileData = new Map();
+    Covers.prototype.createReport = function () {
+        var e_2, _a;
+        var results = new Map();
         try {
-            for (var _c = __values(this.coverPoints), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var cover = _d.value;
-                var file = cover[1].file;
-                var index = files[file] = files[file] || [];
-                index.push(cover[1]);
-                if (!fileData.has(file))
-                    fileData.set(file, {
-                        expected: 0,
-                        executed: 0,
-                        data: Array()
-                    });
-                // Ensure all files are stored
-                var fdata = fileData.get(file);
-                // @ts-ignore.
-                if (cover[1].covered) {
-                    // @ts-ignore
-                    fdata.executed++;
-                }
-                // @ts-ignore.
-                fdata.expected++;
-                // @ts-ignore
-                fdata.data.push(cover[1]);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        result += "\n\nAS-Covers Results\n".blue;
-        result += "=================\n\n".gray;
-        try {
-            for (var _e = __values(fileData.entries()), _f = _e.next(); !_f.done; _f = _e.next()) {
-                var _g = __read(_f.value, 2), file = _g[0], data = _g[1];
-                result += (file + " - Results\n").blue;
-                result += (" - Expected: " + data.expected + "\n").gray;
-                result += (" - Executed: " + data.executed + "\n").gray;
-                result += (" - Coverage: " + Math.round(100 * (data.executed / data.expected) * 100) / 100 + "\n").gray;
+            for (var _b = __values(this.coverPoints), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var _d = __read(_c.value, 2), _ = _d[0], coverPoint = _d[1];
+                var fileName = coverPoint.file;
+                if (!results.has(fileName))
+                    results.set(fileName, new CoverPointReport(fileName));
+                // Ensure it exists
+                var report = results.get(fileName);
+                // Grab report
+                report.coverPoints.push(coverPoint);
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_2) throw e_2.error; }
         }
-        result += "\n";
-        result += ("Total Expected: " + this.coversExpected + "\n").blue;
-        result += ("Total Executed: " + this.coversExecuted + "\n").blue;
-        result += ("Total Coverage: " + Math.round(100 * (this.coversExecuted / this.coversExpected) * 100) / 100 + "%\n").blue;
-        return result;
+        return results;
+    };
+    Covers.prototype.stringify = function () {
+        var report = this.createReport();
+        return text_table_1.default(__spreadArray([
+            ['File', 'Total', 'Block', 'Func', 'Expr', 'Uncovered'],
+            ['_', '_', '_', '_', '_', '_']
+        ], __read(Array.from(report).map(function (_a) {
+            var _b = __read(_a, 2), file = _b[0], rep = _b[1];
+            var uncoveredPoints = rep.coverPoints.filter(function (val) { return !val.covered; });
+            return [
+                file,
+                rep.coveredPercent + "%",
+                rep.coveredBlockPercent + "%",
+                rep.coveredFunctionPercent + "%",
+                rep.coveredExpressionPercent + "%",
+                uncoveredPoints.length > 6
+                    ? uncoveredPoints.slice(0, 6).map(linecol).join(', ') + ",..."
+                    : uncoveredPoints.map(linecol).join(', ')
+            ];
+        }))));
     };
     return Covers;
-}()); //Overall %, Block %, Function %, Expression %, Remaining
+}());
 exports.Covers = Covers;
-function fromEnum(value) {
-    var res = '';
-    for (var key in CoverPointType) {
-        if (CoverPointType[key] === value) {
-            return res = key;
-        }
-    }
-    return res;
-}
 //# sourceMappingURL=index.js.map
