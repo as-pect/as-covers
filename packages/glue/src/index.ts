@@ -1,4 +1,3 @@
-// @ts-ignore
 import { table } from 'table'
 
 import { ASUtil } from "@assemblyscript/loader";
