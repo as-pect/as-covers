@@ -10,9 +10,32 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Covers = exports.CoverPoint = void 0;
+exports.Covers = exports.CoverPoint = exports.CoverPointType = void 0;
 require("colors");
+var CoverPointType;
+(function (CoverPointType) {
+    CoverPointType[CoverPointType["none"] = 0] = "none";
+    CoverPointType[CoverPointType["Function"] = 1] = "Function";
+    CoverPointType[CoverPointType["Block"] = 2] = "Block";
+    CoverPointType[CoverPointType["Expression"] = 3] = "Expression";
+})(CoverPointType = exports.CoverPointType || (exports.CoverPointType = {}));
 var CoverPoint = /** @class */ (function () {
     function CoverPoint(file, line, col, id, type) {
         this.file = file;
@@ -28,6 +51,8 @@ exports.CoverPoint = CoverPoint;
 var Covers = /** @class */ (function () {
     function Covers() {
         this.coverPoints = new Map();
+        this.coversExecuted = 0;
+        this.coversExpected = 0;
     }
     Covers.prototype.installImports = function (imports) {
         imports.__asCovers = {
@@ -62,12 +87,30 @@ var Covers = /** @class */ (function () {
         var result = '';
         var line = "=".repeat(config.width);
         var files = {};
+        var fileData = new Map();
         try {
             for (var _c = __values(this.coverPoints), _d = _c.next(); !_d.done; _d = _c.next()) {
                 var cover = _d.value;
                 var file = cover[1].file;
                 var index = files[file] = files[file] || [];
                 index.push(cover[1]);
+                if (!fileData.has(file))
+                    fileData.set(file, {
+                        expected: 0,
+                        executed: 0,
+                        data: Array()
+                    });
+                // Ensure all files are stored
+                var fdata = fileData.get(file);
+                // @ts-ignore.
+                if (cover[1].covered) {
+                    // @ts-ignore
+                    fdata.executed++;
+                }
+                // @ts-ignore.
+                fdata.expected++;
+                // @ts-ignore
+                fdata.data.push(cover[1]);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -77,13 +120,15 @@ var Covers = /** @class */ (function () {
             }
             finally { if (e_1) throw e_1.error; }
         }
+        result += "\n\nAS-Covers Results\n".blue;
+        result += "=================\n\n".gray;
         try {
-            for (var _e = __values(this.coverPoints.entries()), _f = _e.next(); !_f.done; _f = _e.next()) {
-                var entry = _f.value;
-                result += (entry[1].file + ":" + entry[1].line + ":" + entry[1].col + "\n").blue;
-                result += ("ID: " + entry[1].id.toString() + "\n").gray;
-                result += ("Type: " + fromEnum(entry[1].type) + "\n").gray;
-                result += ("Covered: " + entry[1].covered + "\n").gray;
+            for (var _e = __values(fileData.entries()), _f = _e.next(); !_f.done; _f = _e.next()) {
+                var _g = __read(_f.value, 2), file = _g[0], data = _g[1];
+                result += (file + " - Results\n").blue;
+                result += (" - Expected: " + data.expected + "\n").gray;
+                result += (" - Executed: " + data.executed + "\n").gray;
+                result += (" - Coverage: " + Math.round(100 * (data.executed / data.expected) * 100) / 100 + "\n").gray;
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
@@ -93,23 +138,22 @@ var Covers = /** @class */ (function () {
             }
             finally { if (e_2) throw e_2.error; }
         }
+        result += "\n";
+        result += ("Total Expected: " + this.coversExpected + "\n").blue;
+        result += ("Total Executed: " + this.coversExecuted + "\n").blue;
+        result += ("Total Coverage: " + Math.round(100 * (this.coversExecuted / this.coversExpected) * 100) / 100 + "%\n").blue;
         return result;
     };
     return Covers;
 }()); //Overall %, Block %, Function %, Expression %, Remaining
 exports.Covers = Covers;
-function fromEnum(enu) {
-    if (enu === 1 /* Block */) {
-        return 'Block';
+function fromEnum(value) {
+    var res = '';
+    for (var key in CoverPointType) {
+        if (CoverPointType[key] === value) {
+            return res = key;
+        }
     }
-    else if (enu === 2 /* Expression */) {
-        return 'Expression';
-    }
-    else if (enu === 0 /* Function */) {
-        return 'Function';
-    }
-    else {
-        return 'Unknown';
-    }
+    return res;
 }
 //# sourceMappingURL=index.js.map

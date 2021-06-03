@@ -2,7 +2,8 @@ import 'colors'
 
 import { ASUtil, instantiateSync } from "@assemblyscript/loader";
 
-export const enum CoverPointType {
+export enum CoverPointType {
+  none,
   Function,
   Block,
   Expression,
@@ -27,6 +28,10 @@ export class Covers {
   private coverPoints = new Map<number, CoverPoint>();
   // @ts-ignore
   private loader: ASUtil
+
+  private coversExecuted = 0
+
+  private coversExpected = 0
 
   installImports(imports: any): any {
     imports.__asCovers = {
@@ -63,30 +68,68 @@ export class Covers {
     let result = ''
     const line = "=".repeat(config.width);
     const files: Record<string, Array<CoverPoint>> = {};
+    const fileData = new Map<string, {
+      expected: 0,
+      executed: 0,
+      data: Array<CoverPoint>
+    }>()
+
     for (const cover of this.coverPoints) {
       const { file } = cover[1];
       const index = files[file] = files[file] || [];
       index.push(cover[1]);
+
+      if (!fileData.has(file)) fileData.set(file, {
+        expected: 0,
+        executed: 0,
+        data: Array<CoverPoint>()
+      })
+      // Ensure all files are stored
+
+      const fdata = fileData.get(file)
+
+      // @ts-ignore.
+      if (cover[1].covered) {
+        // @ts-ignore
+        fdata.executed++
+      }
+
+      // @ts-ignore.
+      fdata.expected++
+
+      // @ts-ignore
+      fdata.data.push(cover[1])
+
     }
 
-    for (const entry of this.coverPoints.entries()) {
-      result += `${entry[1].file}:${entry[1].line}:${entry[1].col}\n`.blue
-      result += `ID: ${entry[1].id.toString()}\n`.gray
-      result += `Type: ${fromEnum(entry[1].type)}\n`.gray
-      result += `Covered: ${entry[1].covered}\n`.gray
+    result += `\n\nAS-Covers Results\n`.blue
+
+    result += `=================\n\n`.gray
+
+    for (const [file, data] of fileData.entries()) {
+      
+      result += `${file} - Results\n`.blue
+      result += ` - Expected: ${data.expected}\n`.gray
+      result += ` - Executed: ${data.executed}\n`.gray
+      result += ` - Coverage: ${Math.round(100*(data.executed / data.expected) * 100) / 100}\n`.gray
+
     }
+
+    result += `\n`
+    result += `Total Expected: ${this.coversExpected}\n`.blue
+    result += `Total Executed: ${this.coversExecuted}\n`.blue
+    result += `Total Coverage: ${Math.round(100*(this.coversExecuted / this.coversExpected) * 100)/100}%\n`.blue
+
     return result
   }
 }//Overall %, Block %, Function %, Expression %, Remaining
 
-function fromEnum(enu: CoverPointType): string {
-  if (enu === CoverPointType.Block) {
-    return 'Block'
-  } else if (enu === CoverPointType.Expression) {
-    return 'Expression'
-  } else if (enu === CoverPointType.Function) {
-    return 'Function'
-  } else {
-    return 'Unknown'
+function fromEnum(value: any): string {
+  let res = ''
+  for (const key in CoverPointType) {
+    if (CoverPointType[key] === value) {
+      return res = key
+    }
   }
+  return res
 }
