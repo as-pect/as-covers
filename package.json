@@ -8,6 +8,9 @@
     "build": "asc myTest.ts --lib packages/assembly/index.ts --transform ./packages/transform/src/index.ts --textFile output.wat -o output.wasm --explicitStart --exportRuntime"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "contributors": [
+    "Jairus Tanaka <jairus.v.tanaka@outlook.com>"
+  ],
   "license": "MIT",
   "devDependencies": {
     "@assemblyscript/loader": "^0.19.1",

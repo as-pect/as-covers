@@ -1,4 +1,3 @@
-import { ASUtil } from "@assemblyscript/loader";
 export declare enum CoverPointType {
     Function = 0,
     Block = 1,
@@ -39,7 +38,7 @@ export declare class Covers {
     private coverPoints;
     private loader;
     installImports(imports: any): any;
-    registerLoader(loader: ASUtil): void;
+    registerLoader(loader: any): void;
     private coverDeclare;
     private cover;
     reset(): void;

@@ -33,7 +33,25 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Covers = exports.CoverPoint = exports.CoverPointType = void 0;
-// @ts-ignore
+var tableConfig = {
+    border: {
+        topBody: "\u2500",
+        topJoin: "\u252C",
+        topLeft: "\u250C",
+        topRight: "\u2510",
+        bottomBody: "\u2500",
+        bottomJoin: "\u2534",
+        bottomLeft: "\u2514",
+        bottomRight: "\u2518",
+        bodyLeft: "\u2502",
+        bodyRight: "\u2502",
+        bodyJoin: "\u2502",
+        joinBody: "\u2500",
+        joinLeft: "\u251C",
+        joinRight: "\u2524",
+        joinJoin: "\u253C",
+    },
+};
 var table_1 = require("table");
 var linecol = function (point) { return point.line + ":" + point.col; };
 var CoverPointType;
@@ -132,7 +150,8 @@ var CoverPointReport = /** @class */ (function () {
             this.calculateStats();
             if (this.expressionTotal === 0)
                 return 100;
-            return Math.round(10 * (this.expressionCovered / this.expressionTotal) * 100) / 10;
+            return (Math.round(10 * (this.expressionCovered / this.expressionTotal) * 100) /
+                10);
         },
         enumerable: false,
         configurable: true
@@ -142,7 +161,7 @@ var CoverPointReport = /** @class */ (function () {
             this.calculateStats();
             if (this.functionTotal === 0)
                 return 100;
-            return Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10;
+            return (Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10);
         },
         enumerable: false,
         configurable: true
@@ -166,13 +185,15 @@ var Covers = /** @class */ (function () {
     Covers.prototype.coverDeclare = function (filePtr, id, line, col, coverType) {
         var filePath = this.loader.exports.__getString(filePtr);
         var coverPoint = new CoverPoint(filePath, line, col, id, coverType);
-        if (this.coverPoints.has(id))
-            throw new Error("Cannot add dupliate cover point.");
+        //if (this.coverPoints.has(id))
+        //throw new Error("Cannot add dupliate cover point.");
         this.coverPoints.set(id, coverPoint);
+        console.log("Declare: " + id + " " + filePath + ":" + line + ":" + col);
     };
     Covers.prototype.cover = function (id) {
         if (!this.coverPoints.has(id))
             throw new Error("Cannot cover point that does not exist.");
+        console.log("Cover: " + id);
         var coverPoint = this.coverPoints.get(id);
         coverPoint.covered = true;
     };
@@ -206,7 +227,7 @@ var Covers = /** @class */ (function () {
     Covers.prototype.stringify = function () {
         var report = this.createReport();
         return table_1.table(__spreadArray([
-            ['File', 'Total', 'Block', 'Func', 'Expr', 'Uncovered']
+            ["File", "Total", "Block", "Func", "Expr", "Uncovered"]
         ], __read(Array.from(report).map(function (_a) {
             var _b = __read(_a, 2), file = _b[0], rep = _b[1];
             var uncoveredPoints = rep.coverPoints.filter(function (val) { return !val.covered; });
@@ -217,10 +238,10 @@ var Covers = /** @class */ (function () {
                 rep.coveredFunctionPercent + "%",
                 rep.coveredExpressionPercent + "%",
                 uncoveredPoints.length > 6
-                    ? uncoveredPoints.slice(0, 6).map(linecol).join(', ') + ",..."
-                    : uncoveredPoints.map(linecol).join(', ')
+                    ? uncoveredPoints.slice(0, 6).map(linecol).join(", ") + ",..."
+                    : uncoveredPoints.map(linecol).join(", "),
             ];
-        }))));
+        }))), tableConfig);
     };
     return Covers;
 }());
