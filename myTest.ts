@@ -36,13 +36,13 @@ export function test2(): void {
 // Turnary
 
 // @ts-ignore
-true ? 'Hey, Its trueee!' : 'Oh no.. Its false.';
+trace(true ? "Hey, Its trueee!" : "Oh no.. Its false.");
 // Got turnarys working. Just can't find a way to pop in the coverExpression. :(
 
 //true ? 'Ha' : 'Ho';
 
 // Binary Expression
 
-true || false
+true || false;
 
 // Not working on && yet.
