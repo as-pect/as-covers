@@ -27,6 +27,8 @@ class CoverTransform extends BaseVisitor {
   private sourceId: number = 0;
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
+    const left = expr.left
+    const right = expr.right
     // Just working on || rn. Just copy/paste.
     if (expr.operator === Token.BAR_BAR) {
       // Handle || Symbols
@@ -85,16 +87,24 @@ class CoverTransform extends BaseVisitor {
       const leftCoverExpression = SimpleParser.parseExpression(
         `coverExpression('Its true!', ${rightId})`
       );
+      // @ts-ignore
+      leftCoverExpression.args[0] = left
 
       expr.left = leftCoverExpression
+
+      console.log('Left: ', expr.left)
 
       // Right coverExpression Statement
       const rightCoverExpression = SimpleParser.parseExpression(
         `coverExpression('Its false!', ${rightId})`
       );
 
+      // @ts-ignore
+      rightCoverExpression.args[0] = right
+
       expr.right = rightCoverExpression
 
+      console.log('Right: ', expr.right)
       // Add declare statements to sources
       this.sources.push(
         leftDeclareStatementSource,
@@ -102,6 +112,7 @@ class CoverTransform extends BaseVisitor {
       );
 
       this.globalStatements.push(leftDeclareStatement, rightDeclareStatement);
+
     }
 
     super.visitBinaryExpression(expr);
