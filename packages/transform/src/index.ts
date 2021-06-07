@@ -27,92 +27,45 @@ class CoverTransform extends BaseVisitor {
   private sourceId: number = 0;
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
-    const left = expr.left
-    const right = expr.right
-    // Just working on || rn. Just copy/paste.
-    if (expr.operator === Token.BAR_BAR) {
-      // Handle || Symbols
-      const name = expr.range.source.normalizedPath;
+    const left = expr.left;
+    // Handle || Symbols
+    const name = expr.range.source.normalizedPath;
 
-      const leftId = this.id++;
-      const rightId = this.id++;
-      // ID
+    const leftId = this.id++;
+    // ID
 
-      const leftLc = this.linecol.fromIndex(expr.range.start);
-      const leftLine = leftLc.line;
-      const leftCol = leftLc.col;
-      // Left
+    const leftLc = this.linecol.fromIndex(expr.range.start);
+    const leftLine = leftLc.line;
+    const leftCol = leftLc.col;
+    // Left
 
-      // Get right cordinates
-      let step = 0;
-      let i = 0;
-      for (
-        i = expr.range.start;
-        i < expr.range.source.text.length && step < 2;
-        i++
-      ) {
-        const char = expr.range.source.text[i];
-        if (
-          step === 0 &&
-          char === "|" &&
-          expr.range.source.text[i + 1] === "|"
-        ) {
-          step++;
-        } else if (step === 1 && char !== " ") {
-          step++;
-          i++;
-        }
-      }
+    // Left Declare Statement
+    const leftDeclareStatement = SimpleParser.parseStatement(
+      `coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
+      true
+    );
+    const leftDeclareStatementSource = leftDeclareStatement.range.source;
 
-      const rightLc = this.linecol.fromIndex(i);
-      const rightLine = rightLc.line;
-      const rightCol = rightLc.col;
-      // L/R Cordinates
+    let leftCoverStatement: Statement | null = null;
+    // @ts-ignore
+    if (left.text === "true") {
+      leftCoverStatement = SimpleParser.parseStatement(`cover(${leftId})`);
+    }
 
-      // Left Declare Statement
-      const leftDeclareStatement = SimpleParser.parseStatement(
-        `coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
-        true
-      );
-      const leftDeclareStatementSource = leftDeclareStatement.range.source;
-
-      // Right Declare Statement
-      const rightDeclareStatement = SimpleParser.parseStatement(
-        `coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
-        true
-      );
-      const rightDeclareStatementSource = rightDeclareStatement.range.source;
-
-      // Left coverExpression Statement
-      const leftCoverExpression = SimpleParser.parseExpression(
-        `coverExpression('Its true!', ${rightId})`
-      );
-      // @ts-ignore
-      leftCoverExpression.args[0] = left
-
-      expr.left = leftCoverExpression
-
-      console.log('Left: ', expr.left)
-
-      // Right coverExpression Statement
-      const rightCoverExpression = SimpleParser.parseExpression(
-        `coverExpression('Its false!', ${rightId})`
-      );
-
-      // @ts-ignore
-      rightCoverExpression.args[0] = right
-
-      expr.right = rightCoverExpression
-
-      console.log('Right: ', expr.right)
-      // Add declare statements to sources
+    // Add declare statements to sources
+    if (leftCoverStatement == null) {
+      this.sources.push(leftDeclareStatementSource);
+    } else {
       this.sources.push(
         leftDeclareStatementSource,
-        rightDeclareStatementSource
+        leftCoverStatement.range.source
       );
+    }
 
-      this.globalStatements.push(leftDeclareStatement, rightDeclareStatement);
-
+    if (leftCoverStatement == null) {
+      this.globalStatements.push(leftDeclareStatement);
+    } else {
+      this.globalStatements.push(leftDeclareStatement, leftCoverStatement);
     }
 
     super.visitBinaryExpression(expr);
@@ -126,6 +79,8 @@ class CoverTransform extends BaseVisitor {
   }
 
   visitTernaryExpression(expr: TernaryExpression): void {
+    const trueExpression = expr.ifThen;
+    const falseExpression = expr.ifElse;
     const name = expr.range.source.normalizedPath;
 
     // True
@@ -140,6 +95,18 @@ class CoverTransform extends BaseVisitor {
       true
     );
     const trueDeclareStatementSource = trueDeclareStatement.range.source;
+
+    // @ts-ignore
+    let trueCoverExpression = SimpleParser.parseExpression(
+      `coverExpression('${trueExpression.value}', ${trueId})`
+    );
+    // Pretty sure this only works for strings.
+
+    console.log(expr.ifThen);
+    // @ts-ignore
+    trueCoverExpression.args[0] = trueExpression;
+
+    expr.ifThen = trueCoverExpression;
 
     this.sources.push(trueDeclareStatementSource);
     this.globalStatements.push(trueDeclareStatement);
@@ -174,6 +141,16 @@ class CoverTransform extends BaseVisitor {
       true
     );
     const falseDeclareStatementSource = falseDeclareStatement.range.source;
+
+    // @ts-ignore
+    const falseCoverExpression = SimpleParser.parseExpression(
+      `coverExpression('${falseExpression.value}', ${falseId})`
+    );
+
+    // @ts-ignore
+    falseCoverExpression.args[0] = falseExpression;
+
+    expr.ifElse = falseCoverExpression;
 
     this.sources.push(falseDeclareStatementSource);
     this.globalStatements.push(falseDeclareStatement);

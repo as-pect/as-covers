@@ -36,7 +36,7 @@
  (data (i32.const 60) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00 \00\00\00B\00l\00o\00c\00k\001\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 124) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00 \00\00\00B\00l\00o\00c\00k\002\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 188) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1a\00\00\00I\00f\001\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00")
- (data (i32.const 236) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00$\00\00\00O\00h\00 \00n\00o\00.\00.\00 \00I\00t\00s\00 \00f\00a\00l\00s\00e\00.\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 236) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00 \00\00\00H\00e\00y\00,\00 \00I\00t\00s\00 \00t\00r\00u\00e\00e\00e\00!\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 300) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00F\00u\00n\00c\00t\00i\00o\00n\001\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00")
  (data (i32.const 364) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00F\00u\00n\00c\00t\00i\00o\00n\002\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00")
  (data (i32.const 428) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00A\00l\00l\00o\00c\00a\00t\00i\00o\00n\00 \00t\00o\00o\00 \00l\00a\00r\00g\00e\00\00\00\00\00")
@@ -61,7 +61,7 @@
  (export "__rtti_base" (global $~lib/rt/__rtti_base))
  (export "memory" (memory $0))
  (export "_start" (func $~start))
- (func $~lib/index/coverExpression<bool> (param $0 i32) (param $1 i32) (result i32)
+ (func $~lib/index/coverExpression<~lib/string/String> (param $0 i32) (param $1 i32) (result i32)
   local.get $1
   call $~lib/index/cover
   local.get $0
@@ -2583,13 +2583,13 @@
  (func $start:myTest
   (local $0 i32)
   global.get $~lib/memory/__stack_pointer
-  i32.const 4
+  i32.const 8
   i32.sub
   global.set $~lib/memory/__stack_pointer
   call $~stack_check
   global.get $~lib/memory/__stack_pointer
-  i32.const 0
-  i32.store
+  i64.const 0
+  i64.store
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2675,7 +2675,7 @@
   local.get $0
   i32.const 7
   i32.const 39
-  i32.const 36
+  i32.const 35
   i32.const 2
   call $~lib/index/coverDeclare
   i32.const 32
@@ -2685,10 +2685,12 @@
   i32.store
   local.get $0
   i32.const 8
-  i32.const 46
+  i32.const 44
   i32.const 1
   i32.const 2
   call $~lib/index/coverDeclare
+  i32.const 8
+  call $~lib/index/cover
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2697,9 +2699,11 @@
   local.get $0
   i32.const 9
   i32.const 46
-  i32.const 9
+  i32.const 1
   i32.const 2
   call $~lib/index/coverDeclare
+  i32.const 9
+  call $~lib/index/cover
   i32.const 0
   call $~lib/index/cover
   i32.const 80
@@ -2753,6 +2757,13 @@
   local.set $0
   global.get $~lib/memory/__stack_pointer
   local.get $0
+  i32.store offset=4
+  local.get $0
+  i32.const 6
+  call $~lib/index/coverExpression<~lib/string/String>
+  local.set $0
+  global.get $~lib/memory/__stack_pointer
+  local.get $0
   i32.store
   local.get $0
   i32.const 0
@@ -2763,18 +2774,21 @@
   f64.const 0
   call $~lib/builtins/trace
   i32.const 1
-  i32.const 9
-  call $~lib/index/coverExpression<bool>
   if (result i32)
    i32.const 1
   else
    i32.const 0
-   i32.const 9
-   call $~lib/index/coverExpression<bool>
+  end
+  drop
+  i32.const 1
+  if (result i32)
+   i32.const 1
+  else
+   i32.const 0
   end
   drop
   global.get $~lib/memory/__stack_pointer
-  i32.const 4
+  i32.const 8
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
