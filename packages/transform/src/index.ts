@@ -70,22 +70,22 @@ class CoverTransform extends BaseVisitor {
 
       // Left Declare Statement
       const leftDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
+        `coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
         true
       );
       const leftDeclareStatementSource = leftDeclareStatement.range.source;
 
       // Right Declare Statement
       const rightDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
+        `coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
         true
       );
       const rightDeclareStatementSource = rightDeclareStatement.range.source;
 
-      // Right __coverExpression Statement
+      // Right coverExpression Statement
       // TODO: @jtenner, I can't figure this out... I sort of got it working, but it was kinda funky. Wasn't working half the time.
 
-      // Left __coverExpression Statement
+      // Left coverExpression Statement
       // TODO: Finish this.
 
       // Add declare statements to sources
@@ -117,7 +117,7 @@ class CoverTransform extends BaseVisitor {
     // Cordinates
 
     const trueDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
+      `coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
       true
     );
     const trueDeclareStatementSource = trueDeclareStatement.range.source;
@@ -151,7 +151,7 @@ class CoverTransform extends BaseVisitor {
     // Cordinates
 
     const falseDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+      `coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
       true
     );
     const falseDeclareStatementSource = falseDeclareStatement.range.source;
@@ -183,11 +183,11 @@ class CoverTransform extends BaseVisitor {
     const col = lc.col;
 
     const declareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${coverId}, ${line}, ${col}, CoverType.Block)`,
+      `coverDeclare("${name}", ${coverId}, ${line}, ${col}, CoverType.Block)`,
       true
     );
     const declareStatementSource = declareStatement.range.source;
-    const coverStatement = SimpleParser.parseStatement(`__cover(${coverId})`);
+    const coverStatement = SimpleParser.parseStatement(`cover(${coverId})`);
     const coverStatementSource = coverStatement.range.source;
     this.sources.push(declareStatementSource, coverStatementSource);
     node.statements.unshift(coverStatement);

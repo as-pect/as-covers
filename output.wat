@@ -10,8 +10,8 @@
  (type $i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
- (import "__asCovers" "coverDeclare" (func $~lib/index/__coverDeclare (param i32 i32 i32 i32 i32)))
- (import "__asCovers" "cover" (func $~lib/index/__cover (param i32)))
+ (import "__asCovers" "coverDeclare" (func $~lib/index/coverDeclare (param i32 i32 i32 i32 i32)))
+ (import "__asCovers" "cover" (func $~lib/index/cover (param i32)))
  (import "env" "trace" (func $~lib/builtins/trace (param i32 i32 f64 f64 f64 f64 f64)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (global $~lib/rt/itcms/total (mut i32) (i32.const 0))
@@ -2595,7 +2595,7 @@
   i32.const 2
   i32.const 1
   i32.const 1
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2606,7 +2606,7 @@
   i32.const 7
   i32.const 1
   i32.const 1
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2617,7 +2617,7 @@
   i32.const 14
   i32.const 11
   i32.const 1
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2628,7 +2628,7 @@
   i32.const 19
   i32.const 12
   i32.const 1
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2639,7 +2639,7 @@
   i32.const 26
   i32.const 31
   i32.const 1
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2650,7 +2650,7 @@
   i32.const 31
   i32.const 31
   i32.const 1
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2661,7 +2661,7 @@
   i32.const 39
   i32.const 1
   i32.const 2
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2672,7 +2672,7 @@
   i32.const 39
   i32.const 29
   i32.const 2
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2683,7 +2683,7 @@
   i32.const 46
   i32.const 1
   i32.const 2
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 32
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2694,9 +2694,9 @@
   i32.const 46
   i32.const 9
   i32.const 2
-  call $~lib/index/__coverDeclare
+  call $~lib/index/coverDeclare
   i32.const 0
-  call $~lib/index/__cover
+  call $~lib/index/cover
   i32.const 80
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2711,7 +2711,7 @@
   f64.const 0
   call $~lib/builtins/trace
   i32.const 1
-  call $~lib/index/__cover
+  call $~lib/index/cover
   i32.const 144
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2728,7 +2728,7 @@
   i32.const 1
   drop
   i32.const 2
-  call $~lib/index/__cover
+  call $~lib/index/cover
   i32.const 208
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2769,7 +2769,7 @@
   i32.const 0
   i32.store
   i32.const 4
-  call $~lib/index/__cover
+  call $~lib/index/cover
   i32.const 320
   local.set $0
   global.get $~lib/memory/__stack_pointer
@@ -2799,7 +2799,7 @@
   i32.const 0
   i32.store
   i32.const 5
-  call $~lib/index/__cover
+  call $~lib/index/cover
   i32.const 384
   local.set $0
   global.get $~lib/memory/__stack_pointer

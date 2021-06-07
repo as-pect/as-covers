@@ -37,7 +37,7 @@ export function test2(): void {
 
 // @ts-ignore
 true ? 'Hey, Its trueee!' : 'Oh no.. Its false.';
-// Got turnarys working. Just can't find a way to pop in the __coverExpression. :(
+// Got turnarys working. Just can't find a way to pop in the coverExpression. :(
 
 //true ? 'Ha' : 'Ho';
 
