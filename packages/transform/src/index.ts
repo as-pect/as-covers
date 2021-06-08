@@ -16,7 +16,7 @@ import {
   NodeKind,
 } from "visitor-as/as";
 
-import { utils, SimpleParser, BaseVisitor } from "visitor-as";
+import { SimpleParser, BaseVisitor } from "visitor-as";
 import linecol from "line-column";
 // -- Imports
 class CoverTransform extends BaseVisitor {
@@ -27,45 +27,36 @@ class CoverTransform extends BaseVisitor {
   private sourceId: number = 0;
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
-    const left = expr.left;
-    // Handle || Symbols
     const name = expr.range.source.normalizedPath;
 
-    const leftId = this.id++;
-    // ID
-
-    const leftLc = this.linecol.fromIndex(expr.range.start);
-    const leftLine = leftLc.line;
-    const leftCol = leftLc.col;
-    // Left
-
-    // Left Declare Statement
-    const leftDeclareStatement = SimpleParser.parseStatement(
-      `coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
-      true
-    );
-    const leftDeclareStatementSource = leftDeclareStatement.range.source;
-
-    let leftCoverStatement: Statement | null = null;
-    // @ts-ignore
-    if (left.text === "true") {
-      leftCoverStatement = SimpleParser.parseStatement(`cover(${leftId})`);
-    }
-
-    // Add declare statements to sources
-    if (leftCoverStatement == null) {
-      this.sources.push(leftDeclareStatementSource);
-    } else {
-      this.sources.push(
-        leftDeclareStatementSource,
-        leftCoverStatement.range.source
+    if (expr.operator === Token.AMPERSAND_AMPERSAND) {
+      const leftExpression = expr.left;
+      // ID
+      const leftId = this.id++;
+      const leftLc = this.linecol.fromIndex(expr.range.start);
+      const leftLine = leftLc.line;
+      const leftCol = leftLc.col;
+      // Declare Statement
+      const leftDeclareStatement = SimpleParser.parseStatement(
+        `coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
+        true
       );
-    }
+      const leftDeclareStatementSource = leftDeclareStatement.range.source;
+      // Expression
+      let leftCoverExpression = SimpleParser.parseExpression(
+        `coverExpression($$REPLACE_ME, ${leftId})`
+      );
 
-    if (leftCoverStatement == null) {
+      // @ts-ignore
+      if (leftExpression.text === 'true') {
+        // @ts-ignore
+        leftCoverExpression.args[0] = leftExpression;
+        expr.left = leftCoverExpression;
+      }
+      // TODO: Doesn't quite work yet.
+
+      this.sources.push(leftDeclareStatementSource);
       this.globalStatements.push(leftDeclareStatement);
-    } else {
-      this.globalStatements.push(leftDeclareStatement, leftCoverStatement);
     }
 
     super.visitBinaryExpression(expr);
@@ -98,11 +89,9 @@ class CoverTransform extends BaseVisitor {
 
     // @ts-ignore
     let trueCoverExpression = SimpleParser.parseExpression(
-      `coverExpression('${trueExpression.value}', ${trueId})`
+      `coverExpression($$REPLACE_ME, ${trueId})`
     );
-    // Pretty sure this only works for strings.
 
-    console.log(expr.ifThen);
     // @ts-ignore
     trueCoverExpression.args[0] = trueExpression;
 
@@ -144,7 +133,7 @@ class CoverTransform extends BaseVisitor {
 
     // @ts-ignore
     const falseCoverExpression = SimpleParser.parseExpression(
-      `coverExpression('${falseExpression.value}', ${falseId})`
+      `coverExpression($$REPLACE_ME, ${falseId})`
     );
 
     // @ts-ignore

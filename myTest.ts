@@ -41,6 +41,6 @@ trace(true ? "Hey, Its trueee!" : "Oh no.. Its false.");
 // Binary Expression
 
 // @ts-ignore
-true || false;
+false || true;
 
-true && true;
+false && true

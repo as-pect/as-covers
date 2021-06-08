@@ -2685,25 +2685,10 @@
   i32.store
   local.get $0
   i32.const 8
-  i32.const 44
-  i32.const 1
-  i32.const 2
-  call $~lib/index/coverDeclare
-  i32.const 8
-  call $~lib/index/cover
-  i32.const 32
-  local.set $0
-  global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.store
-  local.get $0
-  i32.const 9
   i32.const 46
   i32.const 1
   i32.const 2
   call $~lib/index/coverDeclare
-  i32.const 9
-  call $~lib/index/cover
   i32.const 0
   call $~lib/index/cover
   i32.const 80
@@ -2773,14 +2758,14 @@
   f64.const 0
   f64.const 0
   call $~lib/builtins/trace
-  i32.const 1
+  i32.const 0
   if (result i32)
    i32.const 1
   else
-   i32.const 0
+   i32.const 1
   end
   drop
-  i32.const 1
+  i32.const 0
   if (result i32)
    i32.const 1
   else
