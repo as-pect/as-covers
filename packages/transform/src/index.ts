@@ -10,6 +10,7 @@ import {
   Token,
   SwitchCase,
   NodeKind,
+  CallExpression,
 } from "visitor-as/as";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
@@ -20,47 +21,64 @@ class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
-  private sourceId: number = 0;
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     const name = expr.range.source.normalizedPath;
 
-    if (expr.operator === Token.AMPERSAND_AMPERSAND) {
-      const leftExpression = expr.left;
-      // ID
-      const leftId = this.id++;
-      const leftLc = this.linecol.fromIndex(expr.range.start);
-      const leftLine = leftLc.line;
-      const leftCol = leftLc.col;
-      // Declare Statement
-      const leftDeclareStatement = SimpleParser.parseStatement(
-        `coverDeclare("${name}", ${leftId}, ${leftLine}, ${leftCol}, CoverType.Expression)`,
-        true
-      );
-      const leftDeclareStatementSource = leftDeclareStatement.range.source;
-      // Expression
-      let leftCoverExpression = SimpleParser.parseExpression(
-        `coverExpression($$REPLACE_ME, ${leftId})`
-      );
+    switch (expr.operator) {
+      case Token.BAR_BAR:
+      case Token.AMPERSAND_AMPERSAND: {
+        const rightExpression = expr.right;
+        // ID
+        const rightId = this.id++;
+        const rightLc = this.linecol.fromIndex(rightExpression.range.start);
+        const rightLine = rightLc.line;
+        const rightCol = rightLc.col;
+        // Declare Statement
+        const rightDeclareStatement = SimpleParser.parseStatement(
+          `__coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
+          true
+        );
+        const rightDeclareStatementSource = rightDeclareStatement.range.source;
+        // Expression
+        let rightCoverExpression = SimpleParser.parseExpression(
+          `__coverExpression($$REPLACE_ME, ${rightId})`
+        ) as CallExpression;
 
-      // @ts-ignore
-      if (leftExpression.text === 'true') {
-        // @ts-ignore
-        leftCoverExpression.args[0] = leftExpression;
-        expr.left = leftCoverExpression;
+        rightCoverExpression.args[0] = rightExpression;
+        expr.right = rightCoverExpression;
+
+        this.sources.push(rightDeclareStatementSource);
+        this.globalStatements.push(rightDeclareStatement);
+
+        break;
       }
-      // TODO: Doesn't quite work yet.
-
-      this.sources.push(leftDeclareStatementSource);
-      this.globalStatements.push(leftDeclareStatement);
     }
 
     super.visitBinaryExpression(expr);
   }
 
   visitIfStatement(stmt: IfStatement): void {
-    if (stmt.kind !== NodeKind.BLOCK) {
-      // TODO: Covert non-blocks to block type.
+    const name = stmt.range.source.normalizedPath;
+    if (stmt.ifTrue.kind !== NodeKind.BLOCK) {
+      const ifTrue = stmt.ifTrue
+      const ifTrueId = this.id++;
+      const trueLc = this.linecol.fromIndex(ifTrue.range.start);
+      const trueLine = trueLc.line;
+      const trueCol = trueLc.col;
+
+      const coverDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${ifTrueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
+        true
+      );
+      const coverDeclareStatementSource = coverDeclareStatement.range.source;
+
+      const coverStatement = SimpleParser.parseStatement(`{__cover(${ifTrueId})};`, true) as BlockStatement;
+      coverStatement.statements.push(ifTrue);
+      stmt.ifTrue = coverStatement;
+      
+      this.sources.push(coverDeclareStatementSource);
+      this.globalStatements.push(coverDeclareStatement);
     }
     super.visitIfStatement(stmt);
   }
@@ -78,14 +96,14 @@ class CoverTransform extends BaseVisitor {
     // Cordinates
 
     const trueDeclareStatement = SimpleParser.parseStatement(
-      `coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
+      `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
       true
     );
     const trueDeclareStatementSource = trueDeclareStatement.range.source;
 
     // @ts-ignore
     let trueCoverExpression = SimpleParser.parseExpression(
-      `coverExpression($$REPLACE_ME, ${trueId})`
+      `__coverExpression($$REPLACE_ME, ${trueId})`
     );
 
     // @ts-ignore
@@ -122,14 +140,14 @@ class CoverTransform extends BaseVisitor {
     // Cordinates
 
     const falseDeclareStatement = SimpleParser.parseStatement(
-      `coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+      `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
       true
     );
     const falseDeclareStatementSource = falseDeclareStatement.range.source;
 
     // @ts-ignore
     const falseCoverExpression = SimpleParser.parseExpression(
-      `coverExpression($$REPLACE_ME, ${falseId})`
+      `__coverExpression($$REPLACE_ME, ${falseId})`
     );
 
     // @ts-ignore
@@ -164,11 +182,11 @@ class CoverTransform extends BaseVisitor {
     const col = lc.col;
 
     const declareStatement = SimpleParser.parseStatement(
-      `coverDeclare("${name}", ${coverId}, ${line}, ${col}, CoverType.Block)`,
+      `__coverDeclare("${name}", ${coverId}, ${line}, ${col}, CoverType.Block)`,
       true
     );
     const declareStatementSource = declareStatement.range.source;
-    const coverStatement = SimpleParser.parseStatement(`cover(${coverId})`);
+    const coverStatement = SimpleParser.parseStatement(`__cover(${coverId})`);
     const coverStatementSource = coverStatement.range.source;
     this.sources.push(declareStatementSource, coverStatementSource);
     node.statements.unshift(coverStatement);
@@ -182,14 +200,12 @@ export = class MyTransform extends Transform {
     for (const source of parser.sources) {
       if (!source.isLibrary && !source.internalPath.startsWith(`~lib/`)) {
         transformer.visit(source);
-        console.log("!lib", source.internalPath);
       }
     }
     let i = 0;
     for (const source of transformer.sources) {
       source.internalPath += `${i++}.ts`;
       parser.sources.push(source);
-      console.log(source.internalPath);
       // Modify file names (incremental)
     }
   }

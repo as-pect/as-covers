@@ -6,12 +6,12 @@ export const enum CoverType {
 }
 // @ts-ignore: external annotation
 @external("__asCovers", "coverDeclare")
-export declare function coverDeclare(file: string, id: u32, line: i32, col: i32, coverType: CoverType): void;
+export declare function __coverDeclare(file: string, id: u32, line: i32, col: i32, coverType: CoverType): void;
 // @ts-ignore: external annotation
 @external("__asCovers", "cover")
-export declare function cover(id: u32): void;
+export declare function __cover(id: u32): void;
 
-export function coverExpression<T>(value: T, id: u32): T {
-  cover(id);
+export function __coverExpression<T>(value: T, id: u32): T {
+  __cover(id);
   return value;
 }

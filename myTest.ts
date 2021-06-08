@@ -21,6 +21,8 @@ if (false) {
   trace("If2 Executed!");
 }
 
+// @ts-ignore
+if (false) trace("If3 Executed!")
 // Functions
 
 export function test1(): void {
@@ -40,7 +42,6 @@ trace(true ? "Hey, Its trueee!" : "Oh no.. Its false.");
 
 // Binary Expression
 
-// @ts-ignore
-false || true;
+false || false;
 
 false && true
