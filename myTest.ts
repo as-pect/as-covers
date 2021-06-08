@@ -22,11 +22,12 @@ if (false) {
 }
 
 // @ts-ignore
-if (false) trace("If3 Executed!")
+if (false) trace("If3 Executed!");
 
-if (true) {}
+if (true) {
+}
 // @ts-ignore
-else trace("If4 Executed!")
+else trace("If4 Executed!");
 // Functions
 
 export function test1(): void {
@@ -39,7 +40,40 @@ export function test2(): void {
   trace("Function2 Executed!");
 }
 
-export const test3 = (): number => 42
+export const test3 = (): number => 42;
+
+class a {
+  haha(): void {
+    // @ts-ignore
+    trace("Haha!");
+  }
+}
+
+switch (true) {
+  case true: {
+    break;
+  }
+  // @ts-ignore
+  case false: {
+    break;
+  }
+  default: {
+    break;
+  }
+}
+
+const aa = new a();
+
+aa.haha();
+
+class randomClass {
+  constructor() {}
+  get randomness (): string {
+    return 'lolz'
+  }
+  set bunnys (a: string) {
+  }
+}
 
 // Turnary
 
@@ -50,4 +84,4 @@ trace(true ? "Hey, Its trueee!" : "Oh no.. Its false.");
 
 false || false;
 
-false && true
+false && true;

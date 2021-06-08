@@ -13,7 +13,9 @@ import {
   CallExpression,
   FunctionDeclaration,
   ExpressionStatement,
-  ReturnStatement
+  ReturnStatement,
+  ArrowKind,
+  MethodDeclaration,
 } from "visitor-as/as";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
@@ -61,6 +63,34 @@ class CoverTransform extends BaseVisitor {
     super.visitBinaryExpression(expr);
   }
 
+  visitMethodDeclaration(dec: MethodDeclaration): void {
+    const name = dec.range.source.normalizedPath;
+    const funcId = this.id++;
+    const funcLc = this.linecol.fromIndex(dec.range.start);
+    const funcLine = funcLc.line;
+    const funcCol = funcLc.col;
+
+    const funcDeclareStatement = SimpleParser.parseStatement(
+      `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
+      true
+    );
+    const funcDeclareStatementSource = funcDeclareStatement.range.source;
+
+    const funcCoverStatement = SimpleParser.parseStatement(
+      `__cover(${funcId})`,
+      true
+    );
+    const funcCoverStatementSource = funcCoverStatement.range.source;
+    const bodyBlock = dec.body as BlockStatement;
+    bodyBlock.statements.unshift(funcCoverStatement);
+    this.sources.push(funcCoverStatementSource);
+
+    this.sources.push(funcDeclareStatementSource);
+    this.globalStatements.push(funcDeclareStatement);
+
+    super.visitMethodDeclaration(dec);
+  }
+
   visitFunctionDeclaration(dec: FunctionDeclaration): void {
     if (dec.body) {
       const name = dec.range.source.normalizedPath;
@@ -74,30 +104,37 @@ class CoverTransform extends BaseVisitor {
         true
       );
       const funcDeclareStatementSource = funcDeclareStatement.range.source;
-      
+
+      this.sources.push(funcDeclareStatementSource);
+      this.globalStatements.push(funcDeclareStatement);
+
       if (dec.body.kind === NodeKind.EXPRESSION) {
-        /*const bodyStatement = SimpleParser.parseStatement(`
+        const bodyStatement = SimpleParser.parseStatement(`
         {
           __cover(${funcId});
           return $$REPLACE_ME;
         }`) as BlockStatement;
-        const bodyReturn = bodyStatement.statements[1] as ReturnStatement
-        bodyReturn.value = dec.body
-        dec.body = bodyStatement
-        this.sources.push(bodyStatement.range.source)*/
+        const bodyReturn = bodyStatement.statements[1] as ReturnStatement;
+        const body = dec.body as ExpressionStatement;
+        dec.arrowKind = ArrowKind.ARROW_SINGLE;
+        bodyReturn.value = body.expression;
+        this.sources.push(bodyStatement.range.source);
+        super.visitFunctionDeclaration(dec);
+        dec.body = body;
+        return;
       } else {
-        const funcCoverStatement = SimpleParser.parseStatement(`__cover(${funcId})`, true);
+        const funcCoverStatement = SimpleParser.parseStatement(
+          `__cover(${funcId})`,
+          true
+        );
         const funcCoverStatementSource = funcCoverStatement.range.source;
-        const bodyBlock = dec.body as BlockStatement
-        bodyBlock.statements.unshift(funcCoverStatement)
-        this.sources.push(funcCoverStatementSource)
+        const bodyBlock = dec.body as BlockStatement;
+        bodyBlock.statements.unshift(funcCoverStatement);
+        this.sources.push(funcCoverStatementSource);
       }
-
-      this.sources.push(funcDeclareStatementSource);
-      this.globalStatements.push(funcDeclareStatement);
     }
 
-    //super.visitFunctionDeclaration(dec);
+    super.visitFunctionDeclaration(dec);
   }
 
   visitIfStatement(stmt: IfStatement): void {
@@ -241,8 +278,30 @@ class CoverTransform extends BaseVisitor {
   }
 
   visitSwitchCase(stmt: SwitchCase): void {
-    // unshift statement into statements
+    const name = stmt.range.source.normalizedPath;
+    const caseId = this.id++;
+    const caseLc = this.linecol.fromIndex(stmt.range.start);
+    const caseLine = caseLc.line;
+    const caseCol = caseLc.col;
+    // Cordinates
+
+    const caseDeclareStatement = SimpleParser.parseStatement(
+      `__coverDeclare("${name}", ${caseId}, ${caseLine}, ${caseCol}, CoverType.Block)`,
+      true
+    );
+    const caseDeclareStatementSource = caseDeclareStatement.range.source;
+
+    const caseCoverStatement = SimpleParser.parseStatement(
+      `__cover(${caseId})`
+    );
+    const caseCoverStatementSource = caseCoverStatement.range.source;
+
+    this.sources.push(caseDeclareStatementSource, caseCoverStatementSource);
+    this.globalStatements.push(caseDeclareStatement);
+
     super.visitSwitchCase(stmt);
+
+    stmt.statements.unshift(caseCoverStatement);
   }
 
   visitSource(source: Source) {
@@ -267,9 +326,13 @@ class CoverTransform extends BaseVisitor {
     const declareStatementSource = declareStatement.range.source;
     const coverStatement = SimpleParser.parseStatement(`__cover(${coverId})`);
     const coverStatementSource = coverStatement.range.source;
+    
     this.sources.push(declareStatementSource, coverStatementSource);
-    node.statements.unshift(coverStatement);
     this.globalStatements.push(declareStatement);
+
+    super.visitBlockStatement(node);
+    
+    node.statements.unshift(coverStatement);
   }
 }
 

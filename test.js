@@ -10,6 +10,7 @@ loader
     e.exports._start();
     e.exports.test1();
     e.exports.test2();
+    console.log(e.exports.test3.value);
     const output = c.stringify();
     process.stdout.write(output);
   });
