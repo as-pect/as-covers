@@ -23,6 +23,10 @@ if (false) {
 
 // @ts-ignore
 if (false) trace("If3 Executed!")
+
+if (true) {}
+// @ts-ignore
+else trace("If4 Executed!")
 // Functions
 
 export function test1(): void {

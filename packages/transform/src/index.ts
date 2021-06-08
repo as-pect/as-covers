@@ -59,9 +59,12 @@ class CoverTransform extends BaseVisitor {
   }
 
   visitIfStatement(stmt: IfStatement): void {
+    let visitIfTrue = false;
+    let visitIfFalse = false;
+    const ifTrue = stmt.ifTrue;
+    const ifFalse = stmt.ifFalse;
     const name = stmt.range.source.normalizedPath;
-    if (stmt.ifTrue.kind !== NodeKind.BLOCK) {
-      const ifTrue = stmt.ifTrue
+    if (ifTrue.kind !== NodeKind.BLOCK) {
       const ifTrueId = this.id++;
       const trueLc = this.linecol.fromIndex(ifTrue.range.start);
       const trueLine = trueLc.line;
@@ -73,14 +76,48 @@ class CoverTransform extends BaseVisitor {
       );
       const coverDeclareStatementSource = coverDeclareStatement.range.source;
 
-      const coverStatement = SimpleParser.parseStatement(`{__cover(${ifTrueId})};`, true) as BlockStatement;
+      const coverStatement = SimpleParser.parseStatement(
+        `{__cover(${ifTrueId})};`,
+        true
+      ) as BlockStatement;
       coverStatement.statements.push(ifTrue);
       stmt.ifTrue = coverStatement;
-      
+
       this.sources.push(coverDeclareStatementSource);
       this.globalStatements.push(coverDeclareStatement);
+      visitIfTrue = true
+      visitIfFalse = !!ifFalse
     }
-    super.visitIfStatement(stmt);
+    if (ifFalse && ifFalse.kind !== NodeKind.BLOCK) {
+      const ifFalseId = this.id++;
+      const falseLc = this.linecol.fromIndex(ifFalse.range.start);
+      const falseLine = falseLc.line;
+      const falseCol = falseLc.col;
+
+      const coverDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+        true
+      );
+      const coverDeclareStatementSource = coverDeclareStatement.range.source;
+
+      const coverStatement = SimpleParser.parseStatement(
+        `{__cover(${ifFalseId})};`,
+        true
+      ) as BlockStatement;
+      coverStatement.statements.push(ifFalse);
+      stmt.ifFalse = coverStatement;
+
+      this.sources.push(coverDeclareStatementSource);
+      this.globalStatements.push(coverDeclareStatement);
+      visitIfTrue = true
+      visitIfFalse = true
+    }
+    if (visitIfTrue || visitIfFalse) {
+      if (visitIfTrue) this._visit(ifTrue)
+      if (visitIfFalse) this._visit(ifFalse!)
+    } else {
+      super.visitIfStatement(stmt);
+    }
   }
 
   visitTernaryExpression(expr: TernaryExpression): void {
