@@ -39,6 +39,8 @@ export function test2(): void {
   trace("Function2 Executed!");
 }
 
+export const test3 = (): number => 42
+
 // Turnary
 
 // @ts-ignore

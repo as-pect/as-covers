@@ -11,6 +11,9 @@ import {
   SwitchCase,
   NodeKind,
   CallExpression,
+  FunctionDeclaration,
+  ExpressionStatement,
+  ReturnStatement
 } from "visitor-as/as";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
@@ -58,6 +61,45 @@ class CoverTransform extends BaseVisitor {
     super.visitBinaryExpression(expr);
   }
 
+  visitFunctionDeclaration(dec: FunctionDeclaration): void {
+    if (dec.body) {
+      const name = dec.range.source.normalizedPath;
+      const funcId = this.id++;
+      const funcLc = this.linecol.fromIndex(dec.range.start);
+      const funcLine = funcLc.line;
+      const funcCol = funcLc.col;
+
+      const funcDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
+        true
+      );
+      const funcDeclareStatementSource = funcDeclareStatement.range.source;
+      
+      if (dec.body.kind === NodeKind.EXPRESSION) {
+        /*const bodyStatement = SimpleParser.parseStatement(`
+        {
+          __cover(${funcId});
+          return $$REPLACE_ME;
+        }`) as BlockStatement;
+        const bodyReturn = bodyStatement.statements[1] as ReturnStatement
+        bodyReturn.value = dec.body
+        dec.body = bodyStatement
+        this.sources.push(bodyStatement.range.source)*/
+      } else {
+        const funcCoverStatement = SimpleParser.parseStatement(`__cover(${funcId})`, true);
+        const funcCoverStatementSource = funcCoverStatement.range.source;
+        const bodyBlock = dec.body as BlockStatement
+        bodyBlock.statements.unshift(funcCoverStatement)
+        this.sources.push(funcCoverStatementSource)
+      }
+
+      this.sources.push(funcDeclareStatementSource);
+      this.globalStatements.push(funcDeclareStatement);
+    }
+
+    //super.visitFunctionDeclaration(dec);
+  }
+
   visitIfStatement(stmt: IfStatement): void {
     let visitIfTrue = false;
     let visitIfFalse = false;
@@ -85,8 +127,8 @@ class CoverTransform extends BaseVisitor {
 
       this.sources.push(coverDeclareStatementSource);
       this.globalStatements.push(coverDeclareStatement);
-      visitIfTrue = true
-      visitIfFalse = !!ifFalse
+      visitIfTrue = true;
+      visitIfFalse = !!ifFalse;
     }
     if (ifFalse && ifFalse.kind !== NodeKind.BLOCK) {
       const ifFalseId = this.id++;
@@ -109,12 +151,12 @@ class CoverTransform extends BaseVisitor {
 
       this.sources.push(coverDeclareStatementSource);
       this.globalStatements.push(coverDeclareStatement);
-      visitIfTrue = true
-      visitIfFalse = true
+      visitIfTrue = true;
+      visitIfFalse = true;
     }
     if (visitIfTrue || visitIfFalse) {
-      if (visitIfTrue) this._visit(ifTrue)
-      if (visitIfFalse) this._visit(ifFalse!)
+      if (visitIfTrue) this._visit(ifTrue);
+      if (visitIfFalse) this._visit(ifFalse!);
     } else {
       super.visitIfStatement(stmt);
     }
