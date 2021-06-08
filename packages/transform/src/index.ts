@@ -1,5 +1,3 @@
-// npx asc myTest.ts ./packages/assembly/index.ts --transform ./packages/transform/src/index.ts --textFile output.wat
-
 import {
   BlockStatement,
   Transform,
@@ -11,8 +9,6 @@ import {
   BinaryExpression,
   Token,
   SwitchCase,
-  CallExpression,
-  Expression,
   NodeKind,
 } from "visitor-as/as";
 
