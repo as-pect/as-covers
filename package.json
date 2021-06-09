@@ -13,8 +13,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@assemblyscript/loader": "^0.19.1",
-    "assemblyscript": "^0.19.1",
+    "@assemblyscript/loader": "^0.19.2",
+    "assemblyscript": "^0.19.2",
     "blessed": "^0.1.81",
     "colors": "^1.4.0",
     "lerna": "^4.0.0",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@types/chalk": "^2.2.0",
-    "@types/node": "^15.12.0",
+    "@types/node": "^15.12.2",
     "@types/text-table": "^0.2.1",
     "chalk": "^4.1.1",
     "table": "^6.7.1",

@@ -1,20 +1,11 @@
-const loader = require("@assemblyscript/loader");
-const fs = require("fs");
-const { Covers } = require("./packages/glue/lib/index");
-const c = new Covers();
+const asc = require("assemblyscript/cli/asc");
 
-loader
-  .instantiate(fs.readFileSync("./output.wasm"), c.installImports({}))
-  .then((e) => {
-    c.registerLoader(e);
-    e.exports._start();
-    e.exports.test1();
-    e.exports.test2();
-
-    // This turns report into nice JSON!
-    fs.writeFileSync('./coverReport.json', JSON.stringify(c.toJSON(), null, 2))
-
-    const output = c.stringify();
-    process.stdout.write(output);
-
-  });
+asc.main([], {
+  stdout: output.stdout,
+  stderr: output.stderr,
+  readFile: name => Object.prototype.hasOwnProperty.call(sources, name) ? sources[name] : null,
+  writeFile: (name, contents) => { output[name] = contents; },
+  listFiles: () => []
+}, (...args) => {
+  console.log(...args);
+});
