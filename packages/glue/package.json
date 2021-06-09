@@ -4,6 +4,7 @@
   "description": "Glue code for code coverage using node.js",
   "main": "lib/index.js",
   "scripts": {
+    "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",

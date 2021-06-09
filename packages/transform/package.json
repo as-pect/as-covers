@@ -4,6 +4,7 @@
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
   "scripts": {
+    "tsc": "tsc",
     "test": "node test/index.js"
   },
   "author": "",
