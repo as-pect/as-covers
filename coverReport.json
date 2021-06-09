@@ -1,10 +1,10 @@
 {
   "overview": {
-    "covered": 14,
+    "covered": 16,
     "uncovered": 16,
     "types": {
-      "block": "52.9%",
-      "function": "42.9%",
+      "block": "55.6%",
+      "function": "50%",
       "expression": "33.3%"
     }
   },
@@ -218,6 +218,20 @@
       "file": "myTest.ts",
       "column": 10,
       "line": 87
+    },
+    "myTest.ts:91:1": {
+      "covered": true,
+      "id": 30,
+      "file": "myTest.ts",
+      "column": 1,
+      "line": 91
+    },
+    "myTest.ts:91:62": {
+      "covered": true,
+      "id": 31,
+      "file": "myTest.ts",
+      "column": 62,
+      "line": 91
     }
   }
 }

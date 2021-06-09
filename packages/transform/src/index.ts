@@ -16,6 +16,7 @@ import {
   ReturnStatement,
   ArrowKind,
   MethodDeclaration,
+  ParameterNode,
 } from "visitor-as/as";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
@@ -89,6 +90,37 @@ class CoverTransform extends BaseVisitor {
     this.globalStatements.push(funcDeclareStatement);
 
     super.visitMethodDeclaration(dec);
+  }
+
+  visitParemeter(node: ParameterNode): void {
+    const name = node.range.source.normalizedPath;
+
+    super.visitParameter(node);
+
+    if (node.initializer) {
+      const parmId = this.id++;
+      const parmLc = this.linecol.fromIndex(node.initializer.range.start);
+      const parmLine = parmLc.line;
+      const parmCol = parmLc.col;
+
+      const parmDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${parmId}, ${parmLine}, ${parmCol}, CoverType.Expression)`,
+        true
+      );
+      const parmDeclareStatementSource = parmDeclareStatement.range.source;
+
+      const parmCoverExpression = SimpleParser.parseExpression(
+        `__coverExpression($$REPLACE_ME, ${parmId})`
+      ) as CallExpression;
+
+      const parmCoverExpressionSource = parmCoverExpression.range.source;
+
+      parmCoverExpression.args[0] = node.initializer;
+      node.initializer = parmCoverExpression;
+
+      this.sources.push(parmDeclareStatementSource, parmCoverExpressionSource);
+      this.globalStatements.push(parmDeclareStatement);
+    }
   }
 
   visitFunctionDeclaration(dec: FunctionDeclaration): void {
@@ -220,9 +252,8 @@ class CoverTransform extends BaseVisitor {
     // @ts-ignore
     let trueCoverExpression = SimpleParser.parseExpression(
       `__coverExpression($$REPLACE_ME, ${trueId})`
-    );
+    ) as CallExpression;
 
-    // @ts-ignore
     trueCoverExpression.args[0] = trueExpression;
 
     expr.ifThen = trueCoverExpression;
@@ -264,9 +295,8 @@ class CoverTransform extends BaseVisitor {
     // @ts-ignore
     const falseCoverExpression = SimpleParser.parseExpression(
       `__coverExpression($$REPLACE_ME, ${falseId})`
-    );
+    ) as CallExpression;
 
-    // @ts-ignore
     falseCoverExpression.args[0] = falseExpression;
 
     expr.ifElse = falseCoverExpression;
@@ -326,12 +356,12 @@ class CoverTransform extends BaseVisitor {
     const declareStatementSource = declareStatement.range.source;
     const coverStatement = SimpleParser.parseStatement(`__cover(${coverId})`);
     const coverStatementSource = coverStatement.range.source;
-    
+
     this.sources.push(declareStatementSource, coverStatementSource);
     this.globalStatements.push(declareStatement);
 
     super.visitBlockStatement(node);
-    
+
     node.statements.unshift(coverStatement);
   }
 }

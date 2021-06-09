@@ -85,3 +85,12 @@ trace(true ? "Hey, Its trueee!" : "Oh no.. Its false.");
 false || false;
 
 false && true;
+
+// Defalt parm
+
+function randoFunc(a: number, b: string | null = null): void {
+  a
+  b
+}
+
+randoFunc(3.14)

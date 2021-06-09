@@ -11,6 +11,7 @@
  (type $i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
+ (type $f64_i32_=>_none (func (param f64 i32)))
  (import "__asCovers" "coverDeclare" (func $~lib/index/__coverDeclare (param i32 i32 i32 i32 i32)))
  (import "__asCovers" "cover" (func $~lib/index/__cover (param i32)))
  (import "env" "trace" (func $~lib/builtins/trace (param i32 i32 f64 f64 f64 f64 f64)))
@@ -29,10 +30,10 @@
  (global $~lib/ASC_LOW_MEMORY_LIMIT i32 (i32.const 0))
  (global $~lib/ASC_SHRINK_LEVEL i32 (i32.const 0))
  (global $myTest/aa (mut i32) (i32.const 0))
- (global $~lib/rt/__rtti_base i32 (i32.const 1024))
- (global $~lib/memory/__data_end i32 (i32.const 1068))
- (global $~lib/memory/__stack_pointer (mut i32) (i32.const 17452))
- (global $~lib/memory/__heap_base i32 (i32.const 17452))
+ (global $~lib/rt/__rtti_base i32 (i32.const 1072))
+ (global $~lib/memory/__data_end i32 (i32.const 1116))
+ (global $~lib/memory/__stack_pointer (mut i32) (i32.const 17500))
+ (global $~lib/memory/__heap_base i32 (i32.const 17500))
  (global $~started (mut i32) (i32.const 0))
  (memory $0 1)
  (data (i32.const 12) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\12\00\00\00m\00y\00T\00e\00s\00t\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00")
@@ -50,11 +51,12 @@
  (data (i32.const 604) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1e\00\00\00~\00l\00i\00b\00/\00r\00t\00/\00t\00l\00s\00f\00.\00t\00s\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 668) "\1c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\n\00\00\00H\00a\00h\00a\00!\00\00\00")
  (data (i32.const 700) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00 \00\00\00H\00e\00y\00,\00 \00I\00t\00s\00 \00t\00r\00u\00e\00e\00e\00!\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 764) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00F\00u\00n\00c\00t\00i\00o\00n\001\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00")
- (data (i32.const 828) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00F\00u\00n\00c\00t\00i\00o\00n\002\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00")
- (data (i32.const 892) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00O\00b\00j\00e\00c\00t\00 \00a\00l\00r\00e\00a\00d\00y\00 \00p\00i\00n\00n\00e\00d\00\00\00")
- (data (i32.const 956) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00O\00b\00j\00e\00c\00t\00 \00i\00s\00 \00n\00o\00t\00 \00p\00i\00n\00n\00e\00d\00\00\00\00\00")
- (data (i32.const 1024) "\05\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00 \00\00\00\00\00\00\00")
+ (data (i32.const 764) ",\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\1a\00\00\00l\00o\00l\00z\00 \00=\d8\00\de\a1&\a1&=\d8\02\de=\d8\80\de\00\00")
+ (data (i32.const 812) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00F\00u\00n\00c\00t\00i\00o\00n\001\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00")
+ (data (i32.const 876) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00&\00\00\00F\00u\00n\00c\00t\00i\00o\00n\002\00 \00E\00x\00e\00c\00u\00t\00e\00d\00!\00\00\00\00\00\00\00")
+ (data (i32.const 940) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00O\00b\00j\00e\00c\00t\00 \00a\00l\00r\00e\00a\00d\00y\00 \00p\00i\00n\00n\00e\00d\00\00\00")
+ (data (i32.const 1004) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00O\00b\00j\00e\00c\00t\00 \00i\00s\00 \00n\00o\00t\00 \00p\00i\00n\00n\00e\00d\00\00\00\00\00")
+ (data (i32.const 1072) "\05\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00 \00\00\00\00\00\00\00")
  (table $0 2 funcref)
  (elem $0 (i32.const 1) $start:myTest~anonymous|0)
  (export "test1" (func $myTest/test1))
@@ -2385,6 +2387,16 @@
   call $~lib/index/__cover
   local.get $0
  )
+ (func $myTest/randoFunc (param $0 f64) (param $1 i32)
+  i32.const 31
+  call $~lib/index/__cover
+  i32.const 30
+  call $~lib/index/__cover
+  local.get $0
+  drop
+  local.get $1
+  drop
+ )
  (func $~lib/rt/itcms/__pin (param $0 i32) (result i32)
   (local $1 i32)
   local.get $0
@@ -2398,7 +2410,7 @@
    i32.const 3
    i32.eq
    if
-    i32.const 912
+    i32.const 960
     i32.const 352
     i32.const 337
     i32.const 7
@@ -2430,7 +2442,7 @@
   i32.const 3
   i32.ne
   if
-   i32.const 976
+   i32.const 1024
    i32.const 352
    i32.const 351
    i32.const 5
@@ -2522,10 +2534,10 @@
   i32.const 288
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 912
+  i32.const 960
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 976
+  i32.const 1024
   local.get $0
   call $~lib/rt/itcms/__visit
  )
@@ -2596,8 +2608,8 @@
   global.get $~lib/memory/__data_end
   i32.lt_s
   if
-   i32.const 17472
    i32.const 17520
+   i32.const 17568
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -2977,6 +2989,28 @@
   i32.const 10
   i32.const 2
   call $~lib/index/__coverDeclare
+  i32.const 32
+  local.set $1
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.store
+  local.get $1
+  i32.const 30
+  i32.const 91
+  i32.const 1
+  i32.const 0
+  call $~lib/index/__coverDeclare
+  i32.const 32
+  local.set $1
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.store
+  local.get $1
+  i32.const 31
+  i32.const 91
+  i32.const 62
+  i32.const 1
+  call $~lib/index/__coverDeclare
   i32.const 0
   call $~lib/index/__cover
   i32.const 80
@@ -3131,6 +3165,14 @@
    i32.const 0
   end
   drop
+  f64.const 3.14
+  i32.const 784
+  local.set $1
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.store offset=4
+  local.get $1
+  call $myTest/randoFunc
   global.get $~lib/memory/__stack_pointer
   i32.const 8
   i32.add
@@ -3150,7 +3192,7 @@
   call $~lib/index/__cover
   i32.const 7
   call $~lib/index/__cover
-  i32.const 784
+  i32.const 832
   local.set $0
   global.get $~lib/memory/__stack_pointer
   local.get $0
@@ -3182,7 +3224,7 @@
   call $~lib/index/__cover
   i32.const 9
   call $~lib/index/__cover
-  i32.const 848
+  i32.const 896
   local.set $0
   global.get $~lib/memory/__stack_pointer
   local.get $0
