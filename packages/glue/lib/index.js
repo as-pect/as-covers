@@ -189,6 +189,7 @@ var Covers = /** @class */ (function () {
         //throw new Error("Cannot add dupliate cover point.");
         this.coverPoints.set(id, coverPoint);
         console.log("Declare: " + id + " " + filePath + ":" + line + ":" + col);
+        console.log(Object.getOwnPropertyNames(this.loader.instance.exports));
     };
     Covers.prototype.cover = function (id) {
         if (!this.coverPoints.has(id))
