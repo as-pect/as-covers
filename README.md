@@ -7,14 +7,14 @@ This package transforms your software, adding some assemblyscript calls to the h
 Any if statements will have the following lines injected into your source code:
 
 ```ts
-coverReportBlock(fileName, line, col, 0);
-coverReportBlock(fileName, line2, col2, 1);
+__coverReportBlock(fileName, line, col, 0);
+__coverReportBlock(fileName, line2, col2, 1);
 
 if (condition) {
-  coverBlock(0);
+  __coverBlock(0);
   // one branch
 } else {
-  coverBlock(1);
+  __coverBlock(1);
  // another branch
 }
 ```
@@ -22,27 +22,27 @@ if (condition) {
 # functions
 
 ```ts
-coverReportFunction(fileName, "a", line, col, 0);
-coverReportFunction(fileName, "b", line2, col2, 1);
+__coverReportFunction(fileName, "a", line, col, 0);
+__coverReportFunction(fileName, "b", line2, col2, 1);
 
 function a(): void {
-  coverFunction(0);
+  __coverFunction(0);
 }
 
 function b(): void {
-  coverFunction(1);
+  __coverFunction(1);
 }
 ```
 
 # ternary expressions
 
 ```ts
-coverReportExpression(fileName, line, col, 0);
-coverReportExpression(fileName, line2, col2, 1);
+__coverReportExpression(fileName, line, col, 0);
+__coverReportExpression(fileName, line2, col2, 1);
 
 let val = condition
-  ? coverExpression(truthyValue, 0)
-  : coverExpression(falsyValue, 1);
+  ? __coverExpression(truthyValue, 0)
+  : __coverExpression(falsyValue, 1);
 ```
 
 # Boolean Expressions
@@ -54,8 +54,8 @@ if (a && b) {
 }
 
 // turns into
-coverReportExpression(fileName, line, col, 0);
-if (a && coverExpression(0, b)) {
+__coverReportExpression(fileName, line, col, 0);
+if (a && __coverExpression(0, b)) {
   // something
 }
 ```
@@ -63,15 +63,15 @@ if (a && coverExpression(0, b)) {
 # while and for loops
 
 ```ts
-coverReportBlock(fileName, line, col, 0);
-coverReportBlock(fileName, line2, col2, 1);
+__coverReportBlock(fileName, line, col, 0);
+__coverReportBlock(fileName, line2, col2, 1);
 
 for (let i = 0; i < 100; i++) {
-  coverBlock(0);
+  __coverBlock(0);
 }
 
 while (true) {
-  coverBlock(1);
+  __coverBlock(1);
   break;
 }
 ```
@@ -79,16 +79,16 @@ while (true) {
 # Switch Case
 
 ```ts
-coverReportBlock(fileName, line, col, 0);
-coverReportBlock(fileName, line2, col2, 1);
-coverReportBlock(fileName, line3, col3, 2);
+__coverReportBlock(fileName, line, col, 0);
+__coverReportBlock(fileName, line2, col2, 1);
+__coverReportBlock(fileName, line3, col3, 2);
 
 switch (expression) {
   case a:
-    coverBlock(0);
+    __coverBlock(0);
   case b:
-    coverBlock(1);
+    __coverBlock(1);
   default:
-    coverBlock(2);
+    __coverBlock(2);
 }
 ```
