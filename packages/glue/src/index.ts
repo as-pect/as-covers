@@ -198,4 +198,43 @@ export class Covers {
       tableConfig
     );
   }
+  // Output as a JSON object. Useful for viewing and manipulating results.
+  public toJSON(): Object {
+    const report = this.createReport()
+    let result = {}
+    for (const [path, CoverReport] of report.entries()) {
+      const coveredPoints = CoverReport.coverPoints.filter((val) => val.covered);
+      const uncoveredPoints = CoverReport.coverPoints.filter((val) => !val.covered);
+      // @ts-ignore
+      result['overview'] = {
+        covered: coveredPoints.length,
+        uncovered: uncoveredPoints.length,
+        types: {
+          block: `${CoverReport.coveredBlockPercent}%`,
+          function: `${CoverReport.coveredFunctionPercent}%`,
+          expression: `${CoverReport.coveredExpressionPercent}%`,
+        }
+      }
+      // @ts-ignore
+      if (!result[path]) result[path] = {}
+
+      for (const coverPoint of CoverReport.coverPoints) {
+        // @ts-ignore
+        const data = result[path][`${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`] = {}
+        // @ts-ignore
+        data['covered'] = coverPoint.covered
+        // @ts-ignore
+        data['id'] = coverPoint.id
+        // @ts-ignore
+        data['file'] = coverPoint.file
+        // @ts-ignore
+        data['column'] = coverPoint.col
+        // @ts-ignore
+        data['line'] = coverPoint.line
+
+      }
+
+    }
+    return result
+  }
 }

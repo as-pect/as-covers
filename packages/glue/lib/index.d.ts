@@ -44,5 +44,6 @@ export declare class Covers {
     reset(): void;
     createReport(): Map<string, CoverPointReport>;
     stringify(): string;
+    toJSON(): Object;
 }
 export {};

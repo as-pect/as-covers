@@ -243,6 +243,64 @@ var Covers = /** @class */ (function () {
             ];
         }))), tableConfig);
     };
+    // Output as a JSON object. Useful for viewing and manipulating results.
+    Covers.prototype.toJSON = function () {
+        var e_3, _a, e_4, _b;
+        var report = this.createReport();
+        var result = {};
+        try {
+            for (var _c = __values(report.entries()), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var _e = __read(_d.value, 2), path = _e[0], CoverReport = _e[1];
+                var coveredPoints = CoverReport.coverPoints.filter(function (val) { return val.covered; });
+                var uncoveredPoints = CoverReport.coverPoints.filter(function (val) { return !val.covered; });
+                // @ts-ignore
+                result['overview'] = {
+                    covered: coveredPoints.length,
+                    uncovered: uncoveredPoints.length,
+                    types: {
+                        block: CoverReport.coveredBlockPercent + "%",
+                        function: CoverReport.coveredFunctionPercent + "%",
+                        expression: CoverReport.coveredExpressionPercent + "%",
+                    }
+                };
+                // @ts-ignore
+                if (!result[path])
+                    result[path] = {};
+                try {
+                    for (var _f = (e_4 = void 0, __values(CoverReport.coverPoints)), _g = _f.next(); !_g.done; _g = _f.next()) {
+                        var coverPoint = _g.value;
+                        // @ts-ignore
+                        var data = result[path][coverPoint.file + ":" + coverPoint.line + ":" + coverPoint.col] = {};
+                        // @ts-ignore
+                        data['covered'] = coverPoint.covered;
+                        // @ts-ignore
+                        data['id'] = coverPoint.id;
+                        // @ts-ignore
+                        data['file'] = coverPoint.file;
+                        // @ts-ignore
+                        data['column'] = coverPoint.col;
+                        // @ts-ignore
+                        data['line'] = coverPoint.line;
+                    }
+                }
+                catch (e_4_1) { e_4 = { error: e_4_1 }; }
+                finally {
+                    try {
+                        if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
+                    }
+                    finally { if (e_4) throw e_4.error; }
+                }
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        return result;
+    };
     return Covers;
 }());
 exports.Covers = Covers;

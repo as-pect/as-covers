@@ -10,7 +10,11 @@ loader
     e.exports._start();
     e.exports.test1();
     e.exports.test2();
-    console.log(e.exports.test3.value);
+
+    // This turns report into nice JSON!
+    fs.writeFileSync('./coverReport.json', JSON.stringify(c.toJSON(), null, 2))
+
     const output = c.stringify();
     process.stdout.write(output);
+
   });

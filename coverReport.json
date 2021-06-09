@@ -1,0 +1,223 @@
+{
+  "overview": {
+    "covered": 14,
+    "uncovered": 16,
+    "types": {
+      "block": "52.9%",
+      "function": "42.9%",
+      "expression": "33.3%"
+    }
+  },
+  "myTest.ts": {
+    "myTest.ts:2:1": {
+      "covered": true,
+      "id": 0,
+      "file": "myTest.ts",
+      "column": 1,
+      "line": 2
+    },
+    "myTest.ts:7:1": {
+      "covered": true,
+      "id": 1,
+      "file": "myTest.ts",
+      "column": 1,
+      "line": 7
+    },
+    "myTest.ts:14:11": {
+      "covered": true,
+      "id": 2,
+      "file": "myTest.ts",
+      "column": 11,
+      "line": 14
+    },
+    "myTest.ts:19:12": {
+      "covered": false,
+      "id": 3,
+      "file": "myTest.ts",
+      "column": 12,
+      "line": 19
+    },
+    "myTest.ts:25:12": {
+      "covered": false,
+      "id": 4,
+      "file": "myTest.ts",
+      "column": 12,
+      "line": 25
+    },
+    "myTest.ts:30:6": {
+      "covered": false,
+      "id": 5,
+      "file": "myTest.ts",
+      "column": 6,
+      "line": 30
+    },
+    "myTest.ts:27:11": {
+      "covered": true,
+      "id": 6,
+      "file": "myTest.ts",
+      "column": 11,
+      "line": 27
+    },
+    "myTest.ts:33:1": {
+      "covered": true,
+      "id": 7,
+      "file": "myTest.ts",
+      "column": 1,
+      "line": 33
+    },
+    "myTest.ts:33:31": {
+      "covered": true,
+      "id": 8,
+      "file": "myTest.ts",
+      "column": 31,
+      "line": 33
+    },
+    "myTest.ts:38:1": {
+      "covered": true,
+      "id": 9,
+      "file": "myTest.ts",
+      "column": 1,
+      "line": 38
+    },
+    "myTest.ts:38:31": {
+      "covered": true,
+      "id": 10,
+      "file": "myTest.ts",
+      "column": 31,
+      "line": 38
+    },
+    "myTest.ts:43:22": {
+      "covered": false,
+      "id": 11,
+      "file": "myTest.ts",
+      "column": 22,
+      "line": 43
+    },
+    "myTest.ts:46:3": {
+      "covered": true,
+      "id": 12,
+      "file": "myTest.ts",
+      "column": 3,
+      "line": 46
+    },
+    "myTest.ts:46:16": {
+      "covered": true,
+      "id": 13,
+      "file": "myTest.ts",
+      "column": 16,
+      "line": 46
+    },
+    "myTest.ts:52:15": {
+      "covered": true,
+      "id": 14,
+      "file": "myTest.ts",
+      "column": 15,
+      "line": 52
+    },
+    "myTest.ts:53:14": {
+      "covered": true,
+      "id": 15,
+      "file": "myTest.ts",
+      "column": 14,
+      "line": 53
+    },
+    "myTest.ts:55:3": {
+      "covered": false,
+      "id": 16,
+      "file": "myTest.ts",
+      "column": 3,
+      "line": 55
+    },
+    "myTest.ts:57:15": {
+      "covered": false,
+      "id": 17,
+      "file": "myTest.ts",
+      "column": 15,
+      "line": 57
+    },
+    "myTest.ts:59:3": {
+      "covered": false,
+      "id": 18,
+      "file": "myTest.ts",
+      "column": 3,
+      "line": 59
+    },
+    "myTest.ts:60:12": {
+      "covered": false,
+      "id": 19,
+      "file": "myTest.ts",
+      "column": 12,
+      "line": 60
+    },
+    "myTest.ts:70:3": {
+      "covered": false,
+      "id": 20,
+      "file": "myTest.ts",
+      "column": 3,
+      "line": 70
+    },
+    "myTest.ts:70:17": {
+      "covered": false,
+      "id": 21,
+      "file": "myTest.ts",
+      "column": 17,
+      "line": 70
+    },
+    "myTest.ts:71:3": {
+      "covered": false,
+      "id": 22,
+      "file": "myTest.ts",
+      "column": 3,
+      "line": 71
+    },
+    "myTest.ts:71:29": {
+      "covered": false,
+      "id": 23,
+      "file": "myTest.ts",
+      "column": 29,
+      "line": 71
+    },
+    "myTest.ts:74:3": {
+      "covered": false,
+      "id": 24,
+      "file": "myTest.ts",
+      "column": 3,
+      "line": 74
+    },
+    "myTest.ts:74:26": {
+      "covered": false,
+      "id": 25,
+      "file": "myTest.ts",
+      "column": 26,
+      "line": 74
+    },
+    "myTest.ts:81:7": {
+      "covered": true,
+      "id": 26,
+      "file": "myTest.ts",
+      "column": 7,
+      "line": 81
+    },
+    "myTest.ts:81:35": {
+      "covered": false,
+      "id": 27,
+      "file": "myTest.ts",
+      "column": 35,
+      "line": 81
+    },
+    "myTest.ts:85:10": {
+      "covered": true,
+      "id": 28,
+      "file": "myTest.ts",
+      "column": 10,
+      "line": 85
+    },
+    "myTest.ts:87:10": {
+      "covered": false,
+      "id": 29,
+      "file": "myTest.ts",
+      "column": 10,
+      "line": 87
+    }
+  }
+}
