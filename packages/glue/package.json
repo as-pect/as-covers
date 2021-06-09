@@ -9,6 +9,8 @@
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@assemblyscript/loader": "^0.18.31"
-  }
+    "@assemblyscript/loader": "^0.18.31",
+    "text-table": "^0.2.0"
+  },
+  "devDependencies": {}
 }
