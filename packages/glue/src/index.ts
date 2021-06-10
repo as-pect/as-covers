@@ -93,30 +93,30 @@ class CoverPointReport {
     if (this.functionTotal === 0) this.functionCoveredFinite = false;
   }
   constructor(public fileName: string) {}
-  public get coveredPercent(): number {
+  public get coveredPercent(): string {
     this.calculateStats();
-    if (this.totalCovered === 0) return 100;
-    return Math.round(10 * (this.totalCovered / this.total) * 100) / 10;
+    if (this.totalCovered === 0) return `N/A%`;
+    return `${Math.round(10 * (this.totalCovered / this.total) * 100) / 10}%`;
   }
-  public get coveredBlockPercent(): number {
+  public get coveredBlockPercent(): string {
     this.calculateStats();
-    if (this.blockTotal === 0) return 100;
-    return Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10;
+    if (this.blockTotal === 0) return `N/A%`;
+    return `${Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10}%`;
   }
-  public get coveredExpressionPercent(): number {
+  public get coveredExpressionPercent(): string {
     this.calculateStats();
-    if (this.expressionTotal === 0) return 100;
-    return (
+    if (this.expressionTotal === 0) return `N/A%`;
+    return `${
       Math.round(10 * (this.expressionCovered / this.expressionTotal) * 100) /
       10
-    );
+    }%`;
   }
-  public get coveredFunctionPercent(): number {
+  public get coveredFunctionPercent(): string {
     this.calculateStats();
-    if (this.functionTotal === 0) return 100;
-    return (
+    if (this.functionTotal === 0) return `N/A%`;
+    return `${
       Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10
-    );
+    }%`;
   }
 }
 
@@ -215,9 +215,10 @@ export class Covers {
         covered: coveredPoints.length,
         uncovered: uncoveredPoints.length,
         types: {
-          block: `${reportEntry.blockCoveredFinite ? reportEntry.coveredBlockPercent : "N/A"}%`,
-          function: `${reportEntry.functionCoveredFinite ? reportEntry.coveredFunctionPercent : "N/A"}%`,
-          expression: `${reportEntry.expressionCoveredFinite ? reportEntry.coveredExpressionPercent : "N/A"}%`,
+          total: reportEntry.coveredPercent,
+          block: reportEntry.coveredBlockPercent,
+          function: reportEntry.coveredFunctionPercent,
+          expression: reportEntry.expressionCoveredFinite,
         }
       }
       // @ts-ignore
