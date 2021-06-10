@@ -23,10 +23,13 @@ declare class CoverPointReport {
     private totalCovered;
     private expressionTotal;
     private expressionCovered;
+    expressionCoveredFinite: boolean;
     private blockTotal;
     private blockCovered;
+    blockCoveredFinite: boolean;
     private functionTotal;
     private functionCovered;
+    functionCoveredFinite: boolean;
     private calculateStats;
     constructor(fileName: string);
     get coveredPercent(): number;

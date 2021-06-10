@@ -81,10 +81,13 @@ var CoverPointReport = /** @class */ (function () {
         this.totalCovered = 0;
         this.expressionTotal = 0;
         this.expressionCovered = 0;
+        this.expressionCoveredFinite = true;
         this.blockTotal = 0;
         this.blockCovered = 0;
+        this.blockCoveredFinite = true;
         this.functionTotal = 0;
         this.functionCovered = 0;
+        this.functionCoveredFinite = true;
     }
     CoverPointReport.prototype.calculateStats = function () {
         var e_1, _a;
@@ -124,6 +127,12 @@ var CoverPointReport = /** @class */ (function () {
             finally { if (e_1) throw e_1.error; }
         }
         this.calculated = true;
+        if (this.blockTotal === 0)
+            this.blockCoveredFinite = false;
+        if (this.expressionTotal === 0)
+            this.expressionCoveredFinite = false;
+        if (this.functionTotal === 0)
+            this.functionCoveredFinite = false;
     };
     Object.defineProperty(CoverPointReport.prototype, "coveredPercent", {
         get: function () {
@@ -188,12 +197,10 @@ var Covers = /** @class */ (function () {
         //if (this.coverPoints.has(id))
         //throw new Error("Cannot add dupliate cover point.");
         this.coverPoints.set(id, coverPoint);
-        console.log("Declare: " + id + " " + filePath + ":" + line + ":" + col);
     };
     Covers.prototype.cover = function (id) {
         if (!this.coverPoints.has(id))
             throw new Error("Cannot cover point that does not exist.");
-        console.log("Cover: " + id);
         var coverPoint = this.coverPoints.get(id);
         coverPoint.covered = true;
     };
@@ -250,24 +257,24 @@ var Covers = /** @class */ (function () {
         var result = {};
         try {
             for (var _c = __values(report.entries()), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var _e = __read(_d.value, 2), path = _e[0], CoverReport = _e[1];
-                var coveredPoints = CoverReport.coverPoints.filter(function (val) { return val.covered; });
-                var uncoveredPoints = CoverReport.coverPoints.filter(function (val) { return !val.covered; });
+                var _e = __read(_d.value, 2), path = _e[0], reportEntry = _e[1];
+                var coveredPoints = reportEntry.coverPoints.filter(function (val) { return val.covered; });
+                var uncoveredPoints = reportEntry.coverPoints.filter(function (val) { return !val.covered; });
                 // @ts-ignore
                 result['overview'] = {
                     covered: coveredPoints.length,
                     uncovered: uncoveredPoints.length,
                     types: {
-                        block: CoverReport.coveredBlockPercent + "%",
-                        function: CoverReport.coveredFunctionPercent + "%",
-                        expression: CoverReport.coveredExpressionPercent + "%",
+                        block: (reportEntry.blockCoveredFinite ? reportEntry.coveredBlockPercent : "N/A") + "%",
+                        function: (reportEntry.functionCoveredFinite ? reportEntry.coveredFunctionPercent : "N/A") + "%",
+                        expression: (reportEntry.expressionCoveredFinite ? reportEntry.coveredExpressionPercent : "N/A") + "%",
                     }
                 };
                 // @ts-ignore
                 if (!result[path])
                     result[path] = {};
                 try {
-                    for (var _f = (e_4 = void 0, __values(CoverReport.coverPoints)), _g = _f.next(); !_g.done; _g = _f.next()) {
+                    for (var _f = (e_4 = void 0, __values(reportEntry.coverPoints)), _g = _f.next(); !_g.done; _g = _f.next()) {
                         var coverPoint = _g.value;
                         // @ts-ignore
                         var data = result[path][coverPoint.file + ":" + coverPoint.line + ":" + coverPoint.col] = {};

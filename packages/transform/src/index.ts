@@ -1,24 +1,23 @@
 import {
-  BlockStatement,
-  Transform,
-  Source,
-  Statement,
-  Parser,
-  TernaryExpression,
-  IfStatement,
-  BinaryExpression,
-  Token,
-  SwitchCase,
-  NodeKind,
-  CallExpression,
-  FunctionDeclaration,
-  ExpressionStatement,
-  ReturnStatement,
   ArrowKind,
+  BinaryExpression,
+  BlockStatement,
+  CommaExpression,
+  ExpressionStatement,
+  FunctionDeclaration,
+  IfStatement,
   MethodDeclaration,
+  NodeKind,
   ParameterNode,
   ParenthesizedExpression,
-  CommaExpression,
+  Parser,
+  ReturnStatement,
+  Source,
+  Statement,
+  SwitchCase,
+  TernaryExpression,
+  Token,
+  Transform,
 } from "visitor-as/as";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
@@ -52,10 +51,9 @@ class CoverTransform extends BaseVisitor {
         const rightDeclareStatementSource = rightDeclareStatement.range.source;
         // Expression
         let rightCoverExpression = SimpleParser.parseExpression(
-          `__coverExpression($$REPLACE_ME, ${rightId})`
-        ) as CallExpression;
-
-        rightCoverExpression.args[0] = rightExpression;
+          `(__cover(${rightId}), $$REPLACE_ME)`
+        ) as ParenthesizedExpression;
+        (rightCoverExpression.expression as CommaExpression).expressions[1] = rightExpression;
         expr.right = rightCoverExpression;
 
         this.sources.push(rightDeclareStatementSource);
@@ -115,12 +113,11 @@ class CoverTransform extends BaseVisitor {
       const parmDeclareStatementSource = parmDeclareStatement.range.source;
 
       const parmCoverExpression = SimpleParser.parseExpression(
-        `__coverExpression($$REPLACE_ME, ${parmId})`
-      ) as CallExpression;
+        `(__cover(${parmId}), $$REPLACE_ME)`
+      ) as ParenthesizedExpression;
 
       const parmCoverExpressionSource = parmCoverExpression.range.source;
-
-      parmCoverExpression.args[0] = node.initializer;
+      (parmCoverExpression.expression as CommaExpression).expressions[1] = node.initializer;
       node.initializer = parmCoverExpression;
 
       this.sources.push(parmDeclareStatementSource, parmCoverExpressionSource);
@@ -240,7 +237,7 @@ class CoverTransform extends BaseVisitor {
 
     // True
     const trueId = this.id++;
-    const trueLc = this.linecol.fromIndex(expr.range.start);
+    const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
     // Cordinates
@@ -264,24 +261,7 @@ class CoverTransform extends BaseVisitor {
     // False
     const falseId = this.id++;
     // Get false cordinates
-    let step = 0;
-    let i = 0;
-    for (
-      i = expr.range.start;
-      i < expr.range.source.text.length && step < 3;
-      i++
-    ) {
-      const char = expr.range.source.text[i];
-      if (step === 0 && char === "?") {
-        step++;
-      } else if (step === 1 && char === ":") {
-        step++;
-      } else if (step === 2 && char !== " ") {
-        i--;
-        step++;
-      }
-    }
-    const falseLc = this.linecol.fromIndex(i);
+    const falseLc = this.linecol.fromIndex(falseExpression.range.start);
     const falseLine = falseLc.line;
     const falseCol = falseLc.col;
     // Cordinates

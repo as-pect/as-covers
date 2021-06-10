@@ -7,18 +7,11 @@ const path = require("path");
 let binary;
 
 asc.main([
-  "--lib", "./packages/assembly/index.ts",
   "--config", "./submodules/assemblyscript/src/asconfig.json",
   "--target", "untouched",
-  "--transform", require.resolve("./packages/transform/lib/index.js")
 ], {
   stdout: process.stdout,
   stderr: process.stderr,
-  writeFile(filename, contents) {
-    if (path.extname(filename) === ".wasm") {
-      binary = contents;
-    }
-  }
-}, (...args) => {
-  console.log(...args);
+}, (err) => {
+  console.log(err);
 });

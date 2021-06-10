@@ -29,8 +29,8 @@ class CoverTransform extends visitor_as_1.BaseVisitor {
                 const rightDeclareStatement = visitor_as_1.SimpleParser.parseStatement(`__coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`, true);
                 const rightDeclareStatementSource = rightDeclareStatement.range.source;
                 // Expression
-                let rightCoverExpression = visitor_as_1.SimpleParser.parseExpression(`__coverExpression($$REPLACE_ME, ${rightId})`);
-                rightCoverExpression.args[0] = rightExpression;
+                let rightCoverExpression = visitor_as_1.SimpleParser.parseExpression(`(__cover(${rightId}), $$REPLACE_ME)`);
+                rightCoverExpression.expression.expressions[1] = rightExpression;
                 expr.right = rightCoverExpression;
                 this.sources.push(rightDeclareStatementSource);
                 this.globalStatements.push(rightDeclareStatement);
@@ -67,9 +67,9 @@ class CoverTransform extends visitor_as_1.BaseVisitor {
             const parmCol = parmLc.col;
             const parmDeclareStatement = visitor_as_1.SimpleParser.parseStatement(`__coverDeclare("${name}", ${parmId}, ${parmLine}, ${parmCol}, CoverType.Expression)`, true);
             const parmDeclareStatementSource = parmDeclareStatement.range.source;
-            const parmCoverExpression = visitor_as_1.SimpleParser.parseExpression(`__coverExpression($$REPLACE_ME, ${parmId})`);
+            const parmCoverExpression = visitor_as_1.SimpleParser.parseExpression(`(__cover(${parmId}), $$REPLACE_ME)`);
             const parmCoverExpressionSource = parmCoverExpression.range.source;
-            parmCoverExpression.args[0] = node.initializer;
+            parmCoverExpression.expression.expressions[1] = node.initializer;
             node.initializer = parmCoverExpression;
             this.sources.push(parmDeclareStatementSource, parmCoverExpressionSource);
             this.globalStatements.push(parmDeclareStatement);
@@ -161,7 +161,7 @@ class CoverTransform extends visitor_as_1.BaseVisitor {
         const name = expr.range.source.normalizedPath;
         // True
         const trueId = this.id++;
-        const trueLc = this.linecol.fromIndex(expr.range.start);
+        const trueLc = this.linecol.fromIndex(trueExpression.range.start);
         const trueLine = trueLc.line;
         const trueCol = trueLc.col;
         // Cordinates
@@ -176,22 +176,7 @@ class CoverTransform extends visitor_as_1.BaseVisitor {
         // False
         const falseId = this.id++;
         // Get false cordinates
-        let step = 0;
-        let i = 0;
-        for (i = expr.range.start; i < expr.range.source.text.length && step < 3; i++) {
-            const char = expr.range.source.text[i];
-            if (step === 0 && char === "?") {
-                step++;
-            }
-            else if (step === 1 && char === ":") {
-                step++;
-            }
-            else if (step === 2 && char !== " ") {
-                i--;
-                step++;
-            }
-        }
-        const falseLc = this.linecol.fromIndex(i);
+        const falseLc = this.linecol.fromIndex(falseExpression.range.start);
         const falseLine = falseLc.line;
         const falseCol = falseLc.col;
         // Cordinates

@@ -53,10 +53,14 @@ class CoverPointReport {
   private totalCovered: number = 0;
   private expressionTotal: number = 0;
   private expressionCovered: number = 0;
+  public expressionCoveredFinite: boolean = true;
   private blockTotal: number = 0;
   private blockCovered: number = 0;
+  public blockCoveredFinite: boolean = true;
   private functionTotal: number = 0;
   private functionCovered: number = 0;
+  public functionCoveredFinite: boolean = true;
+
   private calculateStats(): void {
     if (this.calculated) {
       return;
@@ -84,6 +88,9 @@ class CoverPointReport {
       }
     }
     this.calculated = true;
+    if (this.blockTotal === 0) this.blockCoveredFinite = false;
+    if (this.expressionTotal === 0) this.expressionCoveredFinite = false;
+    if (this.functionTotal === 0) this.functionCoveredFinite = false;
   }
   constructor(public fileName: string) {}
   public get coveredPercent(): number {
@@ -142,13 +149,11 @@ export class Covers {
     //if (this.coverPoints.has(id))
     //throw new Error("Cannot add dupliate cover point.");
     this.coverPoints.set(id, coverPoint);
-    console.log(`Declare: ${id} ${filePath}:${line}:${col}`);
   }
 
   private cover(id: number): void {
     if (!this.coverPoints.has(id))
       throw new Error("Cannot cover point that does not exist.");
-    console.log(`Cover: ${id}`);
     let coverPoint = this.coverPoints.get(id)!;
     coverPoint.covered = true;
   }
@@ -202,23 +207,23 @@ export class Covers {
   public toJSON(): Object {
     const report = this.createReport()
     let result = {}
-    for (const [path, CoverReport] of report.entries()) {
-      const coveredPoints = CoverReport.coverPoints.filter((val) => val.covered);
-      const uncoveredPoints = CoverReport.coverPoints.filter((val) => !val.covered);
+    for (const [path, reportEntry] of report.entries()) {
+      const coveredPoints = reportEntry.coverPoints.filter((val) => val.covered);
+      const uncoveredPoints = reportEntry.coverPoints.filter((val) => !val.covered);
       // @ts-ignore
       result['overview'] = {
         covered: coveredPoints.length,
         uncovered: uncoveredPoints.length,
         types: {
-          block: `${CoverReport.coveredBlockPercent}%`,
-          function: `${CoverReport.coveredFunctionPercent}%`,
-          expression: `${CoverReport.coveredExpressionPercent}%`,
+          block: `${reportEntry.blockCoveredFinite ? reportEntry.coveredBlockPercent : "N/A"}%`,
+          function: `${reportEntry.functionCoveredFinite ? reportEntry.coveredFunctionPercent : "N/A"}%`,
+          expression: `${reportEntry.expressionCoveredFinite ? reportEntry.coveredExpressionPercent : "N/A"}%`,
         }
       }
       // @ts-ignore
       if (!result[path]) result[path] = {}
 
-      for (const coverPoint of CoverReport.coverPoints) {
+      for (const coverPoint of reportEntry.coverPoints) {
         // @ts-ignore
         const data = result[path][`${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`] = {}
         // @ts-ignore
