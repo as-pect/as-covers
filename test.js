@@ -13,5 +13,5 @@ asc.main([
   stdout: process.stdout,
   stderr: process.stderr,
 }, (err) => {
-  console.log(err);
+  if (err) console.log(err);
 });

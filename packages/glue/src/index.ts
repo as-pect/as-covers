@@ -95,7 +95,7 @@ class CoverPointReport {
   constructor(public fileName: string) {}
   public get coveredPercent(): string {
     this.calculateStats();
-    if (this.totalCovered === 0) return `N/A%`;
+    if (this.total === 0) return `N/A%`;
     return `${Math.round(10 * (this.totalCovered / this.total) * 100) / 10}%`;
   }
   public get coveredBlockPercent(): string {
@@ -190,10 +190,10 @@ export class Covers {
           const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered);
           return [
             file,
-            `${rep.coveredPercent}%`,
-            `${rep.coveredBlockPercent}%`,
-            `${rep.coveredFunctionPercent}%`,
-            `${rep.coveredExpressionPercent}%`,
+            rep.coveredPercent,
+            rep.coveredBlockPercent,
+            rep.coveredFunctionPercent,
+            rep.coveredExpressionPercent,
             uncoveredPoints.length > 6
               ? `${uncoveredPoints.slice(0, 6).map(linecol).join(", ")},...`
               : uncoveredPoints.map(linecol).join(", "),
