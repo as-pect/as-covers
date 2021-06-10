@@ -7,7 +7,7 @@
     "test": "run-s build:src build:compiler run:compiler",
     "build:src": "lerna run tsc",
     "build:compiler": "asc --lib ./packages/assembly/index.ts --config ./submodules/assemblyscript/src/asconfig.json --target untouched --transform ./packages/transform/lib/index.js",
-    "run:compiler": "node test.js --wasm ./submodules/assemblyscript/out/assemblyscript.untouched.wasm",
+    "run:compiler": "asc --config ./submodules/assemblyscript/src/asconfig.json --target untouched --wasm ./submodules/assemblyscript/out/assemblyscript.untouched.wasm",
     "build": "asc myTest.ts --lib packages/assembly/index.ts --transform ./packages/transform/src/index.ts --textFile output.wat -o output.wasm --explicitStart --exportRuntime"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
