@@ -1,3 +1,6 @@
+import { table } from "table";
+
+/** This configuration is used for ascii table output. */
 const tableConfig = {
   border: {
     topBody: `─`,
@@ -21,9 +24,7 @@ const tableConfig = {
   },
 };
 
-import { table } from "table";
-
-const linecol = (point: CoverPoint) => `${point.line}:${point.col}`;
+const linecolText = (point: CoverPoint) => `${point.line}:${point.col}`;
 
 export enum CoverPointType {
   Function,
@@ -95,17 +96,17 @@ class CoverPointReport {
   constructor(public fileName: string) {}
   public get coveredPercent(): string {
     this.calculateStats();
-    if (this.total === 0) return `N/A%`;
+    if (this.total === 0) return `N/A`;
     return `${Math.round(10 * (this.totalCovered / this.total) * 100) / 10}%`;
   }
   public get coveredBlockPercent(): string {
     this.calculateStats();
-    if (this.blockTotal === 0) return `N/A%`;
+    if (this.blockTotal === 0) return `N/A`;
     return `${Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10}%`;
   }
   public get coveredExpressionPercent(): string {
     this.calculateStats();
-    if (this.expressionTotal === 0) return `N/A%`;
+    if (this.expressionTotal === 0) return `N/A`;
     return `${
       Math.round(10 * (this.expressionCovered / this.expressionTotal) * 100) /
       10
@@ -113,7 +114,7 @@ class CoverPointReport {
   }
   public get coveredFunctionPercent(): string {
     this.calculateStats();
-    if (this.functionTotal === 0) return `N/A%`;
+    if (this.functionTotal === 0) return `N/A`;
     return `${
       Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10
     }%`;
@@ -195,8 +196,8 @@ export class Covers {
             rep.coveredFunctionPercent,
             rep.coveredExpressionPercent,
             uncoveredPoints.length > 6
-              ? `${uncoveredPoints.slice(0, 6).map(linecol).join(", ")},...`
-              : uncoveredPoints.map(linecol).join(", "),
+              ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")},...`
+              : uncoveredPoints.map(linecolText).join(", "),
           ];
         }),
       ],
