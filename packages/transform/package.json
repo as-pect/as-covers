@@ -4,16 +4,17 @@
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
   "scripts": {
+    "tsc": "tsc",
     "test": "node test/index.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "line-column": "^1.0.2",
-    "typescript": "^4.2.4"
+    "typescript": "^4.2.4",
+    "@types/line-column": "^1.0.0"
   },
   "dependencies": {
-    "@types/line-column": "^1.0.0",
     "visitor-as": "^0.6.0"
   }
 }

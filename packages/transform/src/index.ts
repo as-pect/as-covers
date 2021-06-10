@@ -1,34 +1,40 @@
 import {
+  ArrowKind,
+  BinaryExpression,
   BlockStatement,
-  Transform,
+  CommaExpression,
+  ExpressionStatement,
+  FunctionDeclaration,
+  IfStatement,
+  MethodDeclaration,
+  NodeKind,
+  ParameterNode,
+  ParenthesizedExpression,
+  Parser,
+  ReturnStatement,
   Source,
   Statement,
-  Parser,
-  TernaryExpression,
-  IfStatement,
-  BinaryExpression,
-  Token,
   SwitchCase,
-  NodeKind,
-  CallExpression,
-  FunctionDeclaration,
-  ExpressionStatement,
-  ReturnStatement,
-  ArrowKind,
-  MethodDeclaration,
-  ParameterNode,
+  TernaryExpression,
+  Token,
+  Transform,
 } from "visitor-as/as";
 
+import { createPointID } from "./util";
+
 import { SimpleParser, BaseVisitor } from "visitor-as";
+// @ts-ignore
 import linecol from "line-column";
+
 // -- Imports
 class CoverTransform extends BaseVisitor {
-  private id: number = 0;
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
+
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
+    super.visitBinaryExpression(expr);
     const name = expr.range.source.normalizedPath;
 
     switch (expr.operator) {
@@ -36,10 +42,10 @@ class CoverTransform extends BaseVisitor {
       case Token.AMPERSAND_AMPERSAND: {
         const rightExpression = expr.right;
         // ID
-        const rightId = this.id++;
         const rightLc = this.linecol.fromIndex(rightExpression.range.start);
         const rightLine = rightLc.line;
         const rightCol = rightLc.col;
+        const rightId = createPointID(name, rightLine, rightCol, "CoverType.Expression");
         // Declare Statement
         const rightDeclareStatement = SimpleParser.parseStatement(
           `__coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
@@ -48,10 +54,9 @@ class CoverTransform extends BaseVisitor {
         const rightDeclareStatementSource = rightDeclareStatement.range.source;
         // Expression
         let rightCoverExpression = SimpleParser.parseExpression(
-          `__coverExpression($$REPLACE_ME, ${rightId})`
-        ) as CallExpression;
-
-        rightCoverExpression.args[0] = rightExpression;
+          `(__cover(${rightId}), $$REPLACE_ME)`
+        ) as ParenthesizedExpression;
+        (rightCoverExpression.expression as CommaExpression).expressions[1] = rightExpression;
         expr.right = rightCoverExpression;
 
         this.sources.push(rightDeclareStatementSource);
@@ -61,35 +66,36 @@ class CoverTransform extends BaseVisitor {
       }
     }
 
-    super.visitBinaryExpression(expr);
+
   }
 
   visitMethodDeclaration(dec: MethodDeclaration): void {
-    const name = dec.range.source.normalizedPath;
-    const funcId = this.id++;
-    const funcLc = this.linecol.fromIndex(dec.range.start);
-    const funcLine = funcLc.line;
-    const funcCol = funcLc.col;
-
-    const funcDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
-      true
-    );
-    const funcDeclareStatementSource = funcDeclareStatement.range.source;
-
-    const funcCoverStatement = SimpleParser.parseStatement(
-      `__cover(${funcId})`,
-      true
-    );
-    const funcCoverStatementSource = funcCoverStatement.range.source;
-    const bodyBlock = dec.body as BlockStatement;
-    bodyBlock.statements.unshift(funcCoverStatement);
-    this.sources.push(funcCoverStatementSource);
-
-    this.sources.push(funcDeclareStatementSource);
-    this.globalStatements.push(funcDeclareStatement);
-
     super.visitMethodDeclaration(dec);
+    if (dec.body) {
+      const name = dec.range.source.normalizedPath;
+      const funcLc = this.linecol.fromIndex(dec.range.start);
+      const funcLine = funcLc.line;
+      const funcCol = funcLc.col;
+      const funcId = createPointID(name, funcLine, funcCol, "CoverType.Function");
+
+      const funcDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
+        true
+      );
+      const funcDeclareStatementSource = funcDeclareStatement.range.source;
+
+      const funcCoverStatement = SimpleParser.parseStatement(
+        `__cover(${funcId})`,
+        true
+      );
+      const funcCoverStatementSource = funcCoverStatement.range.source;
+      const bodyBlock = dec.body as BlockStatement;
+      bodyBlock.statements.unshift(funcCoverStatement);
+      this.sources.push(funcCoverStatementSource);
+
+      this.sources.push(funcDeclareStatementSource);
+      this.globalStatements.push(funcDeclareStatement);
+    }
   }
 
   visitParemeter(node: ParameterNode): void {
@@ -98,10 +104,10 @@ class CoverTransform extends BaseVisitor {
     super.visitParameter(node);
 
     if (node.initializer) {
-      const parmId = this.id++;
       const parmLc = this.linecol.fromIndex(node.initializer.range.start);
       const parmLine = parmLc.line;
       const parmCol = parmLc.col;
+      const parmId = createPointID(name, parmLine, parmCol, "CoverType.Expression");
 
       const parmDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${parmId}, ${parmLine}, ${parmCol}, CoverType.Expression)`,
@@ -110,12 +116,11 @@ class CoverTransform extends BaseVisitor {
       const parmDeclareStatementSource = parmDeclareStatement.range.source;
 
       const parmCoverExpression = SimpleParser.parseExpression(
-        `__coverExpression($$REPLACE_ME, ${parmId})`
-      ) as CallExpression;
+        `(__cover(${parmId}), $$REPLACE_ME)`
+      ) as ParenthesizedExpression;
 
       const parmCoverExpressionSource = parmCoverExpression.range.source;
-
-      parmCoverExpression.args[0] = node.initializer;
+      (parmCoverExpression.expression as CommaExpression).expressions[1] = node.initializer;
       node.initializer = parmCoverExpression;
 
       this.sources.push(parmDeclareStatementSource, parmCoverExpressionSource);
@@ -124,12 +129,13 @@ class CoverTransform extends BaseVisitor {
   }
 
   visitFunctionDeclaration(dec: FunctionDeclaration): void {
+    super.visitFunctionDeclaration(dec);
     if (dec.body) {
       const name = dec.range.source.normalizedPath;
-      const funcId = this.id++;
       const funcLc = this.linecol.fromIndex(dec.range.start);
       const funcLine = funcLc.line;
       const funcCol = funcLc.col;
+      const funcId = createPointID(name, funcLine, funcCol, "CoverType.Function");
 
       const funcDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
@@ -151,9 +157,7 @@ class CoverTransform extends BaseVisitor {
         dec.arrowKind = ArrowKind.ARROW_SINGLE;
         bodyReturn.value = body.expression;
         this.sources.push(bodyStatement.range.source);
-        super.visitFunctionDeclaration(dec);
         dec.body = body;
-        return;
       } else {
         const funcCoverStatement = SimpleParser.parseStatement(
           `__cover(${funcId})`,
@@ -165,8 +169,6 @@ class CoverTransform extends BaseVisitor {
         this.sources.push(funcCoverStatementSource);
       }
     }
-
-    super.visitFunctionDeclaration(dec);
   }
 
   visitIfStatement(stmt: IfStatement): void {
@@ -176,10 +178,10 @@ class CoverTransform extends BaseVisitor {
     const ifFalse = stmt.ifFalse;
     const name = stmt.range.source.normalizedPath;
     if (ifTrue.kind !== NodeKind.BLOCK) {
-      const ifTrueId = this.id++;
       const trueLc = this.linecol.fromIndex(ifTrue.range.start);
       const trueLine = trueLc.line;
       const trueCol = trueLc.col;
+      const ifTrueId = createPointID(name, trueLine, trueCol, "CoverType.Expression");
 
       const coverDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${ifTrueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
@@ -200,10 +202,10 @@ class CoverTransform extends BaseVisitor {
       visitIfFalse = !!ifFalse;
     }
     if (ifFalse && ifFalse.kind !== NodeKind.BLOCK) {
-      const ifFalseId = this.id++;
       const falseLc = this.linecol.fromIndex(ifFalse.range.start);
       const falseLine = falseLc.line;
       const falseCol = falseLc.col;
+      const ifFalseId = createPointID(name, falseLine, falseCol, "CoverType.Expression");
 
       const coverDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
@@ -237,10 +239,10 @@ class CoverTransform extends BaseVisitor {
     const name = expr.range.source.normalizedPath;
 
     // True
-    const trueId = this.id++;
-    const trueLc = this.linecol.fromIndex(expr.range.start);
+    const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
+    const trueId = createPointID(name, trueLine, trueCol, "CoverType.Expression");
     // Cordinates
 
     const trueDeclareStatement = SimpleParser.parseStatement(
@@ -251,39 +253,20 @@ class CoverTransform extends BaseVisitor {
 
     // @ts-ignore
     let trueCoverExpression = SimpleParser.parseExpression(
-      `__coverExpression($$REPLACE_ME, ${trueId})`
-    ) as CallExpression;
-
-    trueCoverExpression.args[0] = trueExpression;
-
+      `(__cover(${trueId}), $$REPLACE_ME)`
+    ) as ParenthesizedExpression;
+    (trueCoverExpression.expression as CommaExpression).expressions[1] = trueExpression;
     expr.ifThen = trueCoverExpression;
 
     this.sources.push(trueDeclareStatementSource);
     this.globalStatements.push(trueDeclareStatement);
 
     // False
-    const falseId = this.id++;
     // Get false cordinates
-    let step = 0;
-    let i = 0;
-    for (
-      i = expr.range.start;
-      i < expr.range.source.text.length && step < 3;
-      i++
-    ) {
-      const char = expr.range.source.text[i];
-      if (step === 0 && char === "?") {
-        step++;
-      } else if (step === 1 && char === ":") {
-        step++;
-      } else if (step === 2 && char !== " ") {
-        i--;
-        step++;
-      }
-    }
-    const falseLc = this.linecol.fromIndex(i);
+    const falseLc = this.linecol.fromIndex(falseExpression.range.start);
     const falseLine = falseLc.line;
     const falseCol = falseLc.col;
+    const falseId = createPointID(name, falseLine, falseCol, "CoverType.Expression");
     // Cordinates
 
     const falseDeclareStatement = SimpleParser.parseStatement(
@@ -294,11 +277,9 @@ class CoverTransform extends BaseVisitor {
 
     // @ts-ignore
     const falseCoverExpression = SimpleParser.parseExpression(
-      `__coverExpression($$REPLACE_ME, ${falseId})`
-    ) as CallExpression;
-
-    falseCoverExpression.args[0] = falseExpression;
-
+      `(__cover(${falseId}), $$REPLACE_ME)`
+    ) as ParenthesizedExpression;
+    (falseCoverExpression.expression as CommaExpression).expressions[1] = falseExpression;
     expr.ifElse = falseCoverExpression;
 
     this.sources.push(falseDeclareStatementSource);
@@ -309,10 +290,10 @@ class CoverTransform extends BaseVisitor {
 
   visitSwitchCase(stmt: SwitchCase): void {
     const name = stmt.range.source.normalizedPath;
-    const caseId = this.id++;
     const caseLc = this.linecol.fromIndex(stmt.range.start);
     const caseLine = caseLc.line;
     const caseCol = caseLc.col;
+    const caseId = createPointID(name, caseLine, caseCol, "CoverType.Block");
     // Cordinates
 
     const caseDeclareStatement = SimpleParser.parseStatement(
@@ -343,18 +324,18 @@ class CoverTransform extends BaseVisitor {
   }
 
   visitBlockStatement(node: BlockStatement) {
-    let coverId = this.id++;
     const name = node.range.source.normalizedPath;
-    const lc = this.linecol.fromIndex(node.range.start);
-    const line = lc.line;
-    const col = lc.col;
+    const blockLC = this.linecol.fromIndex(node.range.start);
+    const blockLine = blockLC.line;
+    const blockCol = blockLC.col;
+    const blockCoverId = createPointID(name, blockLine, blockCol, "CoverType.Block");
 
     const declareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${coverId}, ${line}, ${col}, CoverType.Block)`,
+      `__coverDeclare("${name}", ${blockCoverId}, ${blockLine}, ${blockCol}, CoverType.Block)`,
       true
     );
     const declareStatementSource = declareStatement.range.source;
-    const coverStatement = SimpleParser.parseStatement(`__cover(${coverId})`);
+    const coverStatement = SimpleParser.parseStatement(`__cover(${blockCoverId})`);
     const coverStatementSource = coverStatement.range.source;
 
     this.sources.push(declareStatementSource, coverStatementSource);
