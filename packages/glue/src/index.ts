@@ -1,3 +1,6 @@
+/**
+ * Import `table` module for report text output
+ */
 import { table } from "table";
 
 /** This configuration is used for ascii table output. */
@@ -24,18 +27,35 @@ const tableConfig = {
   },
 };
 
+/**
+ *
+ * @param point - The coverpoint to get the `line:col` of.
+ * @returns string
+ */
 const linecolText = (point: CoverPoint) => `${point.line}:${point.col}`;
 
+/**
+ * Generic enum for basic types.
+ * - Function (0)
+ * - Block (1)
+ * - Expression (2)
+ */
 export enum CoverPointType {
   Function,
   Block,
   Expression,
 }
 
+/**
+ * TODO: later.
+ */
 export type CoverageRenderConfiguration = {
   width: number;
 };
 
+/**
+ * Data model. Represents file name, line, column, type (enum), and id.
+ */
 export class CoverPoint {
   public covered: boolean = false;
   constructor(
@@ -47,6 +67,10 @@ export class CoverPoint {
   ) {}
 }
 
+/**
+ * Model for reports.
+ * Calculates input (CoverPoint[]) and outputs statistics
+ */
 class CoverPointReport {
   public coverPoints: CoverPoint[] = [];
   private calculated: boolean = false;
@@ -62,48 +86,65 @@ class CoverPointReport {
   private functionCovered: number = 0;
   public functionCoveredFinite: boolean = true;
 
+  /** Calculates the statistics. */
   private calculateStats(): void {
     if (this.calculated) {
+      // If already calculated, don't do it again.
       return;
     }
     for (const point of this.coverPoints) {
       const covered = point.covered ? 1 : 0;
       this.total++;
       this.totalCovered += covered;
+      // Increment total points, and the covered points.
       switch (point.type) {
         case CoverPointType.Expression: {
+          // If its an expression, increment the total expression count.
           this.expressionTotal++;
+          // If the expression is covered, increment the exressionCovered variable.
           this.expressionCovered += covered;
           break;
         }
         case CoverPointType.Block: {
+          // If its a block, increment the total block count.
           this.blockTotal++;
+          // If the block is covered, increment the blockCovered variable.
           this.blockCovered += covered;
           break;
         }
         case CoverPointType.Function: {
+          // If its a function, increment the total function count.
           this.functionTotal++;
+          // If the function is covered, increment the functionCovered variable.
           this.functionCovered += covered;
           break;
         }
       }
     }
+    // Set calculated to true. Prevents you from re-calculating. (not needed)
     this.calculated = true;
+    // Just a few checks.
     if (this.blockTotal === 0) this.blockCoveredFinite = false;
     if (this.expressionTotal === 0) this.expressionCoveredFinite = false;
     if (this.functionTotal === 0) this.functionCoveredFinite = false;
   }
+  /** Sets this.fileName to a string. */
   constructor(public fileName: string) {}
+  /**  Gets the covered percentage as a string. */
   public get coveredPercent(): string {
     this.calculateStats();
     if (this.total === 0) return `N/A`;
     return `${Math.round(10 * (this.totalCovered / this.total) * 100) / 10}%`;
   }
+  /** Gets the covered block percentage as a string.*/
   public get coveredBlockPercent(): string {
     this.calculateStats();
     if (this.blockTotal === 0) return `N/A`;
-    return `${Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10}%`;
+    return `${
+      Math.round(10 * (this.blockCovered / this.blockTotal) * 100) / 10
+    }%`;
   }
+  /** Gets the covered expression percentage as a string. */
   public get coveredExpressionPercent(): string {
     this.calculateStats();
     if (this.expressionTotal === 0) return `N/A`;
@@ -112,6 +153,7 @@ class CoverPointReport {
       10
     }%`;
   }
+   /** Gets the covered function percentage as a string.*/
   public get coveredFunctionPercent(): string {
     this.calculateStats();
     if (this.functionTotal === 0) return `N/A`;
@@ -119,13 +161,30 @@ class CoverPointReport {
       Math.round(10 * (this.functionCovered / this.functionTotal) * 100) / 10
     }%`;
   }
+  /** Outputs the total number of covered points.*/
+  public get coveredPointsNumber(): number {
+    return this.coverPoints.filter((val) => val.covered).length;
+  }
+  /** Outputs the total number of uncovered points.*/
+  public get uncoveredPointsNumber(): number {
+    return this.coverPoints.filter((val) => !val.covered).length;
+  }
 }
 
+/**
+ * The main class. It houses the initializer, imports, and bindings.
+ */
 export class Covers {
   private coverPoints = new Map<number, CoverPoint>();
   // @ts-ignore
+  // Its any because I can't find the type.
   private loader: any;
 
+  /**
+   * Installs the as-covers imports into the loaded's imports object.
+   * @param imports - loader
+   * @returns - loader 
+   */
   installImports(imports: any): any {
     imports.__asCovers = {
       cover: this.cover.bind(this),
@@ -134,9 +193,23 @@ export class Covers {
     return imports;
   }
 
+  /**
+   * Sets this.loader to the loader. Lets this access the external loader.
+   * @param loader - loader
+   */
   registerLoader(loader: any): void {
     this.loader = loader;
   }
+
+  /**
+   * Tells Covers that a specific line/column should be executed (cover(id)).
+   * Adds id to main coverPoints
+   * @param filePtr - The pointer to the filename
+   * @param id - A specific hash representing the file, col, and line.
+   * @param line - Specifies which line it should occur on
+   * @param col - Specifies which column it should occur on
+   * @param coverType - Enum value. Function, Exression, or Block.
+   */
 
   private coverDeclare(
     filePtr: number,
@@ -145,28 +218,55 @@ export class Covers {
     col: number,
     coverType: CoverPointType
   ): void {
+    // Get filePath. Needs --exportRuntime flag.
     const filePath = this.loader!.exports.__getString(filePtr);
+    // Create new CoverPoint and add it to the main points.
     let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
-    //if (this.coverPoints.has(id))
-    //throw new Error("Cannot add dupliate cover point.");
+    // Throw if you add the same coverID twice.
+    if (this.coverPoints.has(id))
+    throw new Error("Cannot add dupliate cover point.");
+    // Sets CoverPoint inside of this.coverPoints
     this.coverPoints.set(id, coverPoint);
   }
 
+  /**
+   * Lets Covers know if a cover point has been executed.
+   * @param id - The id of the point.
+   */
   private cover(id: number): void {
+    // Throws if the id does not exist.
     if (!this.coverPoints.has(id))
       throw new Error("Cannot cover point that does not exist.");
+      // Grab the CoverPoint
     let coverPoint = this.coverPoints.get(id)!;
+    // Set it to covered
     coverPoint.covered = true;
   }
 
+  /**
+   * Clears all coverPoints.
+   * Useful if user wants to clear everything.
+   * Will result in an error if anything is executed afterwards.
+   */
   public reset(): void {
+    // Clear (Very very unsafe!)
     this.coverPoints.clear();
   }
 
+  /**
+   * Basic report.
+   * Splits everything up into files and calculates statistics.
+   * Gets the total statistics and pushes it to the end.
+   * @returns Map<string, CoverPointReport>
+   */
   public createReport(): Map<string, CoverPointReport> {
+    // The model map to return.
     const results = new Map<string, CoverPointReport>();
+    // Create total statistics. (Appears at the end.)
+    const total = new CoverPointReport("total");
 
     for (const [_, coverPoint] of this.coverPoints) {
+      // Grab filename
       const fileName = coverPoint.file;
 
       if (!results.has(fileName))
@@ -176,72 +276,106 @@ export class Covers {
       const report = results.get(fileName)!;
       // Grab report
 
+      // Push stuff to the report and total
       report.coverPoints.push(coverPoint);
+      total.coverPoints.push(coverPoint);
     }
+    results.set("total", total);
 
+    // Return it.
     return results;
   }
 
+  /**
+   * Returns a table that can be logged.
+   * Provides a basic visual overview of statistics.
+   * @returns string - Table
+   */
   public stringify(): string {
+    // Grab report statistics
     const report = this.createReport();
+    // Returns an array formatted with the `table` module. Makes it look really nice!
     return table(
       [
+        // Main titles for columns
         ["File", "Total", "Block", "Func", "Expr", "Uncovered"],
+        // Loops over all files and generates a report for each.
         ...Array.from(report).map(([file, rep]) => {
           const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered);
           return [
+            // File name
             file,
+            // Total covered for that file (percent)
             rep.coveredPercent,
+            // Block percent
             rep.coveredBlockPercent,
+            // Func percentage
             rep.coveredFunctionPercent,
+            // Expr Percentage
             rep.coveredExpressionPercent,
+            // Some stuff to limit uncovered points length.
             uncoveredPoints.length > 6
               ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")},...`
               : uncoveredPoints.map(linecolText).join(", "),
           ];
         }),
       ],
+      // Table config. (top)
       tableConfig
     );
   }
-  // Output as a JSON object. Useful for viewing and manipulating results.
+  /**
+   * Output a JSON report.
+   * Provides a report that can be easily read or saved. (.json)
+   * @returns Object
+   */
   public toJSON(): Object {
-    const report = this.createReport()
-    let result = {}
+    // Create the report
+    const report = this.createReport();
+    // Result object
+    let result = {};
+    // Loop over entries
     for (const [path, reportEntry] of report.entries()) {
-      const coveredPoints = reportEntry.coverPoints.filter((val) => val.covered);
-      const uncoveredPoints = reportEntry.coverPoints.filter((val) => !val.covered);
       // @ts-ignore
-      result['overview'] = {
-        covered: coveredPoints.length,
-        uncovered: uncoveredPoints.length,
+      // Add basic overview for that fole
+      result[path]["overview"] = {
+        covered: reportEntry.coveredPointsNumber,
+        uncovered: reportEntry.uncoveredPointsNumber,
+        total: reportEntry.coveredPercent,
         types: {
-          total: reportEntry.coveredPercent,
           block: reportEntry.coveredBlockPercent,
           function: reportEntry.coveredFunctionPercent,
           expression: reportEntry.expressionCoveredFinite,
-        }
-      }
+        },
+      };
       // @ts-ignore
-      if (!result[path]) result[path] = {}
+      // Add path if it isn't there.
+      if (!result[path]) result[path] = {};
 
+      // insert the data
       for (const coverPoint of reportEntry.coverPoints) {
         // @ts-ignore
-        const data = result[path][`${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`] = {}
+        const data = (result[path][
+          // Gets the file and location.
+          `${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`
+        ] = {});
         // @ts-ignore
-        data['covered'] = coverPoint.covered
+        // Add covered prop
+        data["covered"] = coverPoint.covered;
         // @ts-ignore
-        data['id'] = coverPoint.id
+        // add id prop
+        data["id"] = coverPoint.id;
         // @ts-ignore
-        data['file'] = coverPoint.file
+        // add file prop
+        data["file"] = coverPoint.file;
         // @ts-ignore
-        data['column'] = coverPoint.col
+        // add col prop
+        data["column"] = coverPoint.col;
         // @ts-ignore
-        data['line'] = coverPoint.line
-
+        // add line prop
+        data["line"] = coverPoint.line;
       }
-
     }
-    return result
+    return result;
   }
 }
