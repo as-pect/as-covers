@@ -28,10 +28,10 @@ import linecol from "line-column";
 
 // -- Imports
 class CoverTransform extends BaseVisitor {
-  private id: number = 0;
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
+
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     super.visitBinaryExpression(expr);
