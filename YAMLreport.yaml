@@ -1,0 +1,195 @@
+myTest.ts:
+  overview:
+    covered: 22
+    uncovered: 9
+    total: 71%
+    types:
+      block: 75%
+      function: 100%
+      expression: true
+  myTest.ts:2:24:
+    covered: true
+    id: 348011092
+    file: myTest.ts
+    column: 24
+    line: 2
+  myTest.ts:2:1:
+    covered: true
+    id: -2111362142
+    file: myTest.ts
+    column: 1
+    line: 2
+  myTest.ts:4:24:
+    covered: true
+    id: -469637358
+    file: myTest.ts
+    column: 24
+    line: 4
+  myTest.ts:4:1:
+    covered: true
+    id: -1892507424
+    file: myTest.ts
+    column: 1
+    line: 4
+  myTest.ts:11:27:
+    covered: true
+    id: -874126335
+    file: myTest.ts
+    column: 27
+    line: 11
+  myTest.ts:11:15:
+    covered: true
+    id: 1940983205
+    file: myTest.ts
+    column: 15
+    line: 11
+  myTest.ts:13:27:
+    covered: true
+    id: -1691774785
+    file: myTest.ts
+    column: 27
+    line: 13
+  myTest.ts:13:15:
+    covered: true
+    id: 135544871
+    file: myTest.ts
+    column: 15
+    line: 13
+  myTest.ts:21:8:
+    covered: true
+    id: 1552093670
+    file: myTest.ts
+    column: 8
+    line: 21
+  myTest.ts:21:21:
+    covered: false
+    id: 374468361
+    file: myTest.ts
+    column: 21
+    line: 21
+  myTest.ts:23:9:
+    covered: false
+    id: -619976125
+    file: myTest.ts
+    column: 9
+    line: 23
+  myTest.ts:23:22:
+    covered: true
+    id: -1523039318
+    file: myTest.ts
+    column: 22
+    line: 23
+  myTest.ts:27:9:
+    covered: false
+    id: -888003137
+    file: myTest.ts
+    column: 9
+    line: 27
+  myTest.ts:29:9:
+    covered: true
+    id: -1022016643
+    file: myTest.ts
+    column: 9
+    line: 29
+  myTest.ts:31:10:
+    covered: false
+    id: 1198779976
+    file: myTest.ts
+    column: 10
+    line: 31
+  myTest.ts:35:11:
+    covered: true
+    id: -619572646
+    file: myTest.ts
+    column: 11
+    line: 35
+  myTest.ts:38:12:
+    covered: false
+    id: -237928819
+    file: myTest.ts
+    column: 12
+    line: 38
+  myTest.ts:42:66:
+    covered: true
+    id: -1695529634
+    file: myTest.ts
+    column: 66
+    line: 42
+  myTest.ts:42:1:
+    covered: true
+    id: 170295086
+    file: myTest.ts
+    column: 1
+    line: 42
+  myTest.ts:50:15:
+    covered: true
+    id: -1329445499
+    file: myTest.ts
+    column: 15
+    line: 50
+  myTest.ts:51:14:
+    covered: true
+    id: 1203387875
+    file: myTest.ts
+    column: 14
+    line: 51
+  myTest.ts:53:3:
+    covered: false
+    id: -1788977895
+    file: myTest.ts
+    column: 3
+    line: 53
+  myTest.ts:55:15:
+    covered: false
+    id: 921400672
+    file: myTest.ts
+    column: 15
+    line: 55
+  myTest.ts:57:3:
+    covered: false
+    id: -871898083
+    file: myTest.ts
+    column: 3
+    line: 57
+  myTest.ts:58:12:
+    covered: false
+    id: -70033798
+    file: myTest.ts
+    column: 12
+    line: 58
+  myTest.ts:65:1:
+    covered: true
+    id: 1996569336
+    file: myTest.ts
+    column: 1
+    line: 65
+  myTest.ts:68:1:
+    covered: true
+    id: -536846277
+    file: myTest.ts
+    column: 1
+    line: 68
+  myTest.ts:74:19:
+    covered: true
+    id: -1423769081
+    file: myTest.ts
+    column: 19
+    line: 74
+  myTest.ts:74:5:
+    covered: true
+    id: -1806820949
+    file: myTest.ts
+    column: 5
+    line: 74
+  myTest.ts:75:29:
+    covered: true
+    id: 1465301637
+    file: myTest.ts
+    column: 29
+    line: 75
+  myTest.ts:75:5:
+    covered: true
+    id: 450090058
+    file: myTest.ts
+    column: 5
+    line: 75

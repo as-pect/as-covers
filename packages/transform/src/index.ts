@@ -1,3 +1,18 @@
+/**
+ * The primary transform file.
+ * Inserts __coverDeclare(...) and __cover(id) to facilitate code coverage.
+ * __coverDeclare raises the expected count of instances while
+ * __cover raises the executed count.
+ * To get results, it goes like this:
+ * Uncovered: expected - executed
+ * Covered: executed
+ * Along with this, we get file coordinates that give us information about where the statement occured.
+ * If you have any questions, please contact Joshua Tenner or Jairus Tanaka for information. 
+ * Also, please view the Contributing Guidelines before submitting changes.
+ * Have fun!
+ */
+
+// Import visitor-as
 import {
   ArrowKind,
   BinaryExpression,
@@ -20,32 +35,62 @@ import {
   Transform,
 } from "visitor-as/as";
 
+// Import djb2 hash from util. (string to number)
 import { createPointID } from "./util";
-
+// Visitor-as imports
 import { SimpleParser, BaseVisitor } from "visitor-as";
 // @ts-ignore
 import linecol from "line-column";
 
-// -- Imports
+/**
+ * Transform class.
+ * This adds the __coverDeclare and __cover wherever they are needed.
+ * It covers:
+ * - Turnarys
+ * - &&
+ * - ||
+ * - Functions
+ * - Switch/Case
+ * - If Statements
+ * - Blocks
+ * - Paremeters
+ */
 class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
 
-  // Declare properties.
+  /**
+   * This covers both the && and || operators.
+   * It replaces `true || false` to look like this
+   * `(__cover(id), $$REPLACE_ME) || (__cover(id), $$REPLACE_ME)`
+   * Then, it replaces `$$REPLACE_ME` (aka. args[1]) with this
+   * `(__cover(id), true) || (__cover(id), false)`
+   * @param expr BinaryExpression
+   */
   visitBinaryExpression(expr: BinaryExpression): void {
+    // Visit it (super)
     super.visitBinaryExpression(expr);
+    // Grab the name
     const name = expr.range.source.normalizedPath;
-
+    // Switch/case (&& or ||)
     switch (expr.operator) {
       case Token.BAR_BAR:
       case Token.AMPERSAND_AMPERSAND: {
+        // If (&& or ||)
+        // Get right expression (right side of the || or &&)
         const rightExpression = expr.right;
-        // ID
+        // Coordinates
+        // Start is the char
         const rightLc = this.linecol.fromIndex(rightExpression.range.start);
         const rightLine = rightLc.line;
         const rightCol = rightLc.col;
-        const rightId = createPointID(name, rightLine, rightCol, "CoverType.Expression");
+        const rightId = createPointID(
+          name,
+          rightLine,
+          rightCol,
+          "CoverType.Expression"
+        );
         // Declare Statement
         const rightDeclareStatement = SimpleParser.parseStatement(
           `__coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
@@ -56,7 +101,8 @@ class CoverTransform extends BaseVisitor {
         let rightCoverExpression = SimpleParser.parseExpression(
           `(__cover(${rightId}), $$REPLACE_ME)`
         ) as ParenthesizedExpression;
-        (rightCoverExpression.expression as CommaExpression).expressions[1] = rightExpression;
+        (rightCoverExpression.expression as CommaExpression).expressions[1] =
+          rightExpression;
         expr.right = rightCoverExpression;
 
         this.sources.push(rightDeclareStatementSource);
@@ -65,8 +111,6 @@ class CoverTransform extends BaseVisitor {
         break;
       }
     }
-
-
   }
 
   visitMethodDeclaration(dec: MethodDeclaration): void {
@@ -76,7 +120,12 @@ class CoverTransform extends BaseVisitor {
       const funcLc = this.linecol.fromIndex(dec.range.start);
       const funcLine = funcLc.line;
       const funcCol = funcLc.col;
-      const funcId = createPointID(name, funcLine, funcCol, "CoverType.Function");
+      const funcId = createPointID(
+        name,
+        funcLine,
+        funcCol,
+        "CoverType.Function"
+      );
 
       const funcDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
@@ -107,7 +156,12 @@ class CoverTransform extends BaseVisitor {
       const parmLc = this.linecol.fromIndex(node.initializer.range.start);
       const parmLine = parmLc.line;
       const parmCol = parmLc.col;
-      const parmId = createPointID(name, parmLine, parmCol, "CoverType.Expression");
+      const parmId = createPointID(
+        name,
+        parmLine,
+        parmCol,
+        "CoverType.Expression"
+      );
 
       const parmDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${parmId}, ${parmLine}, ${parmCol}, CoverType.Expression)`,
@@ -120,7 +174,8 @@ class CoverTransform extends BaseVisitor {
       ) as ParenthesizedExpression;
 
       const parmCoverExpressionSource = parmCoverExpression.range.source;
-      (parmCoverExpression.expression as CommaExpression).expressions[1] = node.initializer;
+      (parmCoverExpression.expression as CommaExpression).expressions[1] =
+        node.initializer;
       node.initializer = parmCoverExpression;
 
       this.sources.push(parmDeclareStatementSource, parmCoverExpressionSource);
@@ -135,7 +190,12 @@ class CoverTransform extends BaseVisitor {
       const funcLc = this.linecol.fromIndex(dec.range.start);
       const funcLine = funcLc.line;
       const funcCol = funcLc.col;
-      const funcId = createPointID(name, funcLine, funcCol, "CoverType.Function");
+      const funcId = createPointID(
+        name,
+        funcLine,
+        funcCol,
+        "CoverType.Function"
+      );
 
       const funcDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
@@ -181,7 +241,12 @@ class CoverTransform extends BaseVisitor {
       const trueLc = this.linecol.fromIndex(ifTrue.range.start);
       const trueLine = trueLc.line;
       const trueCol = trueLc.col;
-      const ifTrueId = createPointID(name, trueLine, trueCol, "CoverType.Expression");
+      const ifTrueId = createPointID(
+        name,
+        trueLine,
+        trueCol,
+        "CoverType.Expression"
+      );
 
       const coverDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${ifTrueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
@@ -205,7 +270,12 @@ class CoverTransform extends BaseVisitor {
       const falseLc = this.linecol.fromIndex(ifFalse.range.start);
       const falseLine = falseLc.line;
       const falseCol = falseLc.col;
-      const ifFalseId = createPointID(name, falseLine, falseCol, "CoverType.Expression");
+      const ifFalseId = createPointID(
+        name,
+        falseLine,
+        falseCol,
+        "CoverType.Expression"
+      );
 
       const coverDeclareStatement = SimpleParser.parseStatement(
         `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
@@ -242,7 +312,12 @@ class CoverTransform extends BaseVisitor {
     const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
-    const trueId = createPointID(name, trueLine, trueCol, "CoverType.Expression");
+    const trueId = createPointID(
+      name,
+      trueLine,
+      trueCol,
+      "CoverType.Expression"
+    );
     // Cordinates
 
     const trueDeclareStatement = SimpleParser.parseStatement(
@@ -255,7 +330,8 @@ class CoverTransform extends BaseVisitor {
     let trueCoverExpression = SimpleParser.parseExpression(
       `(__cover(${trueId}), $$REPLACE_ME)`
     ) as ParenthesizedExpression;
-    (trueCoverExpression.expression as CommaExpression).expressions[1] = trueExpression;
+    (trueCoverExpression.expression as CommaExpression).expressions[1] =
+      trueExpression;
     expr.ifThen = trueCoverExpression;
 
     this.sources.push(trueDeclareStatementSource);
@@ -266,7 +342,12 @@ class CoverTransform extends BaseVisitor {
     const falseLc = this.linecol.fromIndex(falseExpression.range.start);
     const falseLine = falseLc.line;
     const falseCol = falseLc.col;
-    const falseId = createPointID(name, falseLine, falseCol, "CoverType.Expression");
+    const falseId = createPointID(
+      name,
+      falseLine,
+      falseCol,
+      "CoverType.Expression"
+    );
     // Cordinates
 
     const falseDeclareStatement = SimpleParser.parseStatement(
@@ -279,7 +360,8 @@ class CoverTransform extends BaseVisitor {
     const falseCoverExpression = SimpleParser.parseExpression(
       `(__cover(${falseId}), $$REPLACE_ME)`
     ) as ParenthesizedExpression;
-    (falseCoverExpression.expression as CommaExpression).expressions[1] = falseExpression;
+    (falseCoverExpression.expression as CommaExpression).expressions[1] =
+      falseExpression;
     expr.ifElse = falseCoverExpression;
 
     this.sources.push(falseDeclareStatementSource);
@@ -328,14 +410,21 @@ class CoverTransform extends BaseVisitor {
     const blockLC = this.linecol.fromIndex(node.range.start);
     const blockLine = blockLC.line;
     const blockCol = blockLC.col;
-    const blockCoverId = createPointID(name, blockLine, blockCol, "CoverType.Block");
+    const blockCoverId = createPointID(
+      name,
+      blockLine,
+      blockCol,
+      "CoverType.Block"
+    );
 
     const declareStatement = SimpleParser.parseStatement(
       `__coverDeclare("${name}", ${blockCoverId}, ${blockLine}, ${blockCol}, CoverType.Block)`,
       true
     );
     const declareStatementSource = declareStatement.range.source;
-    const coverStatement = SimpleParser.parseStatement(`__cover(${blockCoverId})`);
+    const coverStatement = SimpleParser.parseStatement(
+      `__cover(${blockCoverId})`
+    );
     const coverStatementSource = coverStatement.range.source;
 
     this.sources.push(declareStatementSource, coverStatementSource);

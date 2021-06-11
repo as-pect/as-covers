@@ -3,6 +3,11 @@
  */
 import { table } from "table";
 
+/**
+ * Import YAML formatter
+ */
+import yaml from "yaml";
+
 /** This configuration is used for ascii table output. */
 const tableConfig = {
   border: {
@@ -153,7 +158,7 @@ class CoverPointReport {
       10
     }%`;
   }
-   /** Gets the covered function percentage as a string.*/
+  /** Gets the covered function percentage as a string.*/
   public get coveredFunctionPercent(): string {
     this.calculateStats();
     if (this.functionTotal === 0) return `N/A`;
@@ -183,7 +188,7 @@ export class Covers {
   /**
    * Installs the as-covers imports into the loaded's imports object.
    * @param imports - loader
-   * @returns - loader 
+   * @returns - loader
    */
   installImports(imports: any): any {
     imports.__asCovers = {
@@ -224,7 +229,7 @@ export class Covers {
     let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
     // Throw if you add the same coverID twice.
     if (this.coverPoints.has(id))
-    throw new Error("Cannot add dupliate cover point.");
+      throw new Error("Cannot add dupliate cover point.");
     // Sets CoverPoint inside of this.coverPoints
     this.coverPoints.set(id, coverPoint);
   }
@@ -237,7 +242,7 @@ export class Covers {
     // Throws if the id does not exist.
     if (!this.coverPoints.has(id))
       throw new Error("Cannot cover point that does not exist.");
-      // Grab the CoverPoint
+    // Grab the CoverPoint
     let coverPoint = this.coverPoints.get(id)!;
     // Set it to covered
     coverPoint.covered = true;
@@ -315,7 +320,7 @@ export class Covers {
             rep.coveredExpressionPercent,
             // Some stuff to limit uncovered points length.
             uncoveredPoints.length > 6
-              ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")},...`
+              ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")}...`
               : uncoveredPoints.map(linecolText).join(", "),
           ];
         }),
@@ -324,20 +329,25 @@ export class Covers {
       tableConfig
     );
   }
+
   /**
-   * Output a JSON report.
-   * Provides a report that can be easily read or saved. (.json)
-   * @returns Object
+   * Outputs report as YAML
+   * @returns String
    */
-  public toJSON(): Object {
+
+  public toYAML(): string {
     // Create the report
     const report = this.createReport();
+    report.delete("total");
     // Result object
     let result = {};
     // Loop over entries
     for (const [path, reportEntry] of report.entries()) {
       // @ts-ignore
-      // Add basic overview for that fole
+      // Add path if it isn't there.
+      if (!result[path]) result[path] = {};
+      // @ts-ignore
+      // Add basic overview for that file
       result[path]["overview"] = {
         covered: reportEntry.coveredPointsNumber,
         uncovered: reportEntry.uncoveredPointsNumber,
@@ -348,9 +358,89 @@ export class Covers {
           expression: reportEntry.expressionCoveredFinite,
         },
       };
+
+      // insert the data
+      for (const coverPoint of reportEntry.coverPoints) {
+        // @ts-ignore
+        const data = (result[path][
+          // Gets the file and location.
+          `${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`
+        ] = {});
+        // @ts-ignore
+        // Add covered prop
+        data["covered"] = coverPoint.covered;
+        // @ts-ignore
+        // add id prop
+        data["id"] = coverPoint.id;
+        // @ts-ignore
+        // add file prop
+        data["file"] = coverPoint.file;
+        // @ts-ignore
+        // add col prop
+        data["column"] = coverPoint.col;
+        // @ts-ignore
+        // add line prop
+        data["line"] = coverPoint.line;
+      }
+    }
+    return yaml.stringify(result);
+  }
+  /**
+   * Outputs report as CSV
+   * @returns String
+   */
+  public toCSV(): string {
+    let result = "File,Covered,ID,Column,Line\n";
+    const report = this.createReport();
+    for (const [_, reportEntry] of report.entries()) {
+      for (const coverPoint of reportEntry.coverPoints) {
+        let res = [];
+        // File and location
+        res.push(coverPoint.file);
+        // Add covered prop
+        res.push(coverPoint.covered ? "true" : "false");
+        // add id prop
+        res.push(coverPoint.id.toString());
+        // add col prop
+        res.push(coverPoint.col.toString());
+        // add line prop
+        res.push(coverPoint.line.toString());
+
+        // Push it all to result (CSV Format)
+        result += `${res.join(",")}\n`;
+      }
+    }
+    // Resolve CSV
+    return result;
+  }
+  /**
+   * Output a JSON report.
+   * Provides a report that can be easily read or saved. (.json)
+   * @returns Object
+   */
+  public toJSON(): Object {
+    // Create the report
+    const report = this.createReport();
+    report.delete("total");
+    // Result object
+    let result = {};
+    // Loop over entries
+    for (const [path, reportEntry] of report.entries()) {
       // @ts-ignore
       // Add path if it isn't there.
       if (!result[path]) result[path] = {};
+      // @ts-ignore
+      // Add basic overview for that file
+      result[path]["overview"] = {
+        covered: reportEntry.coveredPointsNumber,
+        uncovered: reportEntry.uncoveredPointsNumber,
+        total: reportEntry.coveredPercent,
+        types: {
+          block: reportEntry.coveredBlockPercent,
+          function: reportEntry.coveredFunctionPercent,
+          expression: reportEntry.expressionCoveredFinite,
+        },
+      };
 
       // insert the data
       for (const coverPoint of reportEntry.coverPoints) {
