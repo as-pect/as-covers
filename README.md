@@ -15,6 +15,9 @@
 ## Usage
 
 ```js
+// TL;DR (later)
 ```
 
 ## Contributing
+
+See CONTRIBUTING.md

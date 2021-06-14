@@ -4,7 +4,9 @@ const loader = require('@assemblyscript/loader')
 
 const { Covers } = require('./packages/glue')
 
-const cover = new Covers()
+const cover = new Covers({
+    files: ['myTest.ts']
+})
 
 const imports = {}
 

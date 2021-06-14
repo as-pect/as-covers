@@ -1,4 +1,8 @@
 /**
+ * Import micromatch module. (File globbing)
+ */
+const mm = require('micromatch');
+/**
  * Import `table` module for report text output
  */
 import { table } from "table";
@@ -177,6 +181,13 @@ class CoverPointReport {
 }
 
 /**
+ * Covers option interface
+ */
+interface ICoversOptions {
+  files?: Array<string>
+}
+
+/**
  * The main class. It houses the initializer, imports, and bindings.
  */
 export class Covers {
@@ -184,6 +195,10 @@ export class Covers {
   // @ts-ignore
   // Its any because I can't find the type.
   private loader: any;
+
+  constructor(public options: ICoversOptions = {
+    files: ['**/*.*']
+  }) {}
 
   /**
    * Installs the as-covers imports into the loaded's imports object.
@@ -274,6 +289,8 @@ export class Covers {
       // Grab filename
       const fileName = coverPoint.file;
 
+      if (this.options.files && !mm.isMatch(fileName, this.options.files)) continue
+
       if (!results.has(fileName))
         results.set(fileName, new CoverPointReport(fileName));
       // Ensure it exists
@@ -305,7 +322,7 @@ export class Covers {
         // Main titles for columns
         ["File", "Total", "Block", "Func", "Expr", "Uncovered"],
         // Loops over all files and generates a report for each.
-        ...Array.from(report).map(([file, rep]) => {
+        ...Array.from(report).map(([file, rep], i) => {
           const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered);
           return [
             // File name
@@ -319,9 +336,9 @@ export class Covers {
             // Expr Percentage
             rep.coveredExpressionPercent,
             // Some stuff to limit uncovered points length.
-            uncoveredPoints.length > 6
+            i === report.size - 1 ? '' : (uncoveredPoints.length > 6
               ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")}...`
-              : uncoveredPoints.map(linecolText).join(", "),
+              : uncoveredPoints.map(linecolText).join(", "))
           ];
         }),
       ],
