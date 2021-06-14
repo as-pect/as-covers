@@ -1,0 +1,17 @@
+{
+  "name": "@as-covers/core",
+  "version": "0.0.1",
+  "description": "Core code coverage package for as-covers.",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "contributors": [
+    "Jairus Tanaka <jairus.v.tanaka@outlook.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@as-covers/glue": "^0.0.1",
+    "@as-covers/transform": "^0.0.1",
+    "@as-covers/assembly": "^0.0.1"
+  }
+}
