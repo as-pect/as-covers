@@ -35,43 +35,21 @@ import {
   Transform,
 } from "visitor-as/as";
 
-// Import djb2 hash from util. (string to number)
 import { createPointID } from "./util";
-// Visitor-as imports
+
 import { SimpleParser, BaseVisitor } from "visitor-as";
 // @ts-ignore
 import linecol from "line-column";
 
-/**
- * Transform class.
- * This adds the __coverDeclare and __cover wherever they are needed.
- * It covers:
- * - Turnarys
- * - &&
- * - ||
- * - Functions
- * - Switch/Case
- * - If Statements
- * - Blocks
- * - Paremeters
- */
+// -- Imports
 class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
 
-  /**
-   * This covers both the && and || operators.
-   * It replaces `true || false` to look like this
-   * `(__cover(id), $$REPLACE_ME) || (__cover(id), $$REPLACE_ME)`
-   * Then, it replaces `$$REPLACE_ME` (aka. args[1]) with this
-   * `(__cover(id), true) || (__cover(id), false)`
-   * @param expr BinaryExpression
-   */
+  // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
-    // Visit it (super)
     super.visitBinaryExpression(expr);
-    // Grab the name
     const name = expr.range.source.normalizedPath;
     // Switch/case (&& or ||)
     switch (expr.operator) {

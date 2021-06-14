@@ -1,7 +1,7 @@
 /**
  * Import micromatch module. (File globbing)
  */
-const mm = require('micromatch');
+const mm = require("micromatch");
 /**
  * Import `table` module for report text output
  */
@@ -184,7 +184,7 @@ class CoverPointReport {
  * Covers option interface
  */
 interface ICoversOptions {
-  files?: Array<string>
+  files?: Array<string>;
 }
 
 /**
@@ -196,9 +196,11 @@ export class Covers {
   // Its any because I can't find the type.
   private loader: any;
 
-  constructor(public options: ICoversOptions = {
-    files: ['**/*.*']
-  }) {}
+  constructor(
+    public options: ICoversOptions = {
+      files: ["**/*.*"],
+    }
+  ) {}
 
   /**
    * Installs the as-covers imports into the loaded's imports object.
@@ -289,7 +291,8 @@ export class Covers {
       // Grab filename
       const fileName = coverPoint.file;
 
-      if (this.options.files && !mm.isMatch(fileName, this.options.files)) continue
+      if (this.options.files && !mm.isMatch(fileName, this.options.files))
+        continue;
 
       if (!results.has(fileName))
         results.set(fileName, new CoverPointReport(fileName));
@@ -336,9 +339,11 @@ export class Covers {
             // Expr Percentage
             rep.coveredExpressionPercent,
             // Some stuff to limit uncovered points length.
-            i === report.size - 1 ? '' : (uncoveredPoints.length > 6
+            i === report.size - 1
+              ? ""
+              : uncoveredPoints.length > 6
               ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")}...`
-              : uncoveredPoints.map(linecolText).join(", "))
+              : uncoveredPoints.map(linecolText).join(", "),
           ];
         }),
       ],
