@@ -19,5 +19,8 @@
   "devDependencies": {
     "@assemblyscript/loader": "^0.19.2",
     "@types/table": "^6.3.2"
-  }
+  },
+  "files": [
+    "lib"
+  ]
 }
