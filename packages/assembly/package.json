@@ -1,0 +1,11 @@
+{
+  "name": "@as-covers/assembly",
+  "version": "0.0.1",
+  "description": "AssemblyScript code coverage for as-covers",
+  "scripts": {},
+  "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "contributors": [
+    "Jairus Tanaka <jairus.v.tanaka@outlook.com>"
+  ],
+  "license": "MIT"
+}

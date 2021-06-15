@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/glue",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Glue code for code coverage using node.js",
   "main": "lib/index.js",
   "scripts": {
@@ -8,10 +8,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "contributors": [
+    "Jairus Tanaka <jairus.v.tanaka@outlook.com>"
+  ],
   "license": "MIT",
   "dependencies": {
     "@assemblyscript/loader": "^0.18.31",
-    "text-table": "^0.2.0"
+    "csv-stringify": "^5.6.2",
+    "table": "^6.7.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/table": "^6.3.2"
+  }
 }

@@ -1,14 +1,17 @@
 {
   "name": "@as-covers/transform",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
   "scripts": {
     "tsc": "tsc",
     "test": "node test/index.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Joshua Tenner <tenner.joshua@gmail.com>",
+  "contributors": [
+    "Jairus Tanaka <jairus.v.tanaka@outlook.com>"
+  ],
+  "license": "MIT",
   "devDependencies": {
     "line-column": "^1.0.2",
     "typescript": "^4.2.4",
