@@ -1,11 +1,4 @@
-# AS-Covers (transform)
-**AssemblyScript code coverage transform**
-
-## Installation
-
-```bash
-~ npm install @as-covers/transform
-```# AS-Covers
+# AS-Covers
 
 Code coverage for AssemblyScript projects that uses a few simple packages to make visualizing how well your code branches are covered.
 

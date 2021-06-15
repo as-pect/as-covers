@@ -13,11 +13,11 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@assemblyscript/loader": "^0.18.31",
     "csv-stringify": "^5.6.2",
     "table": "^6.7.1"
   },
   "devDependencies": {
+    "@assemblyscript/loader": "^0.19.2",
     "@types/table": "^6.3.2"
   }
 }
