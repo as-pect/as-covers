@@ -4,6 +4,7 @@
   "description": "Code coverage transform for AssemblyScript",
   "main": "index.js",
   "scripts": {
+    "postinstall": "lerna bootstrap",
     "test": "run-s build:src build:compiler run:compiler",
     "build:src": "lerna run tsc",
     "build:compiler": "asc --lib ./packages/assembly/index.ts --config ./submodules/assemblyscript/src/asconfig.json --target untouched --transform ./packages/transform/lib/index.js",

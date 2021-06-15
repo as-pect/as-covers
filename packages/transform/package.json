@@ -14,10 +14,13 @@
   "license": "MIT",
   "devDependencies": {
     "line-column": "^1.0.2",
-    "typescript": "^4.2.4",
+    "typescript": "^4.3.2",
     "@types/line-column": "^1.0.0"
   },
   "dependencies": {
     "visitor-as": "^0.6.0"
-  }
+  },
+  "files": [
+    "lib"
+  ]
 }
