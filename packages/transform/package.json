@@ -19,5 +19,8 @@
   },
   "dependencies": {
     "visitor-as": "^0.6.0"
-  }
+  },
+  "files": [
+    "lib"
+  ]
 }
