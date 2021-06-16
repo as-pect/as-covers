@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/transform",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
   "scripts": {
@@ -13,9 +13,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@types/line-column": "^1.0.0",
     "line-column": "^1.0.2",
-    "typescript": "^4.3.2",
-    "@types/line-column": "^1.0.0"
+    "typescript": "^4.3.2"
   },
   "dependencies": {
     "visitor-as": "^0.6.0"
