@@ -240,13 +240,12 @@ export class Covers {
     col: number,
     coverType: CoverPointType
   ): void {
+    // Cover points are immutable. (so it's already been added)
+    if (this.coverPoints.has(id)) return;
     // Get filePath. Needs --exportRuntime flag.
     const filePath = this.loader!.exports.__getString(filePtr);
     // Create new CoverPoint and add it to the main points.
     let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
-    // Throw if you add the same coverID twice.
-    if (this.coverPoints.has(id))
-      throw new Error("Cannot add dupliate cover point.");
     // Sets CoverPoint inside of this.coverPoints
     this.coverPoints.set(id, coverPoint);
   }
