@@ -1,3 +1,7 @@
+// This is the standard test for AS-Covers.
+// If it fails, something was changed that broke it.
+// To add new checks, just copy-and-paste coverReport.json to coverReportSnapshot.json.
+
 const loader = require("@assemblyscript/loader");
 const fs = require("fs");
 const { Covers } = require("../packages/glue/lib/index");
@@ -16,7 +20,9 @@ const JSONreport = JSON.stringify(covers.toJSON(), null, 2)
 const resultSnapShot = fs.readFileSync('./output/coverReportSnapshot.json').toString()
 
 if (resultSnapShot === JSONreport) {
-    console.log('All Tests Passed!')
+    console.log('Test Result: Passed.')
+} else {
+  console.log('Test Result: Failed.')
 }
 
 fs.writeFileSync(
