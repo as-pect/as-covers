@@ -41,12 +41,14 @@ import { SimpleParser, BaseVisitor } from "visitor-as";
 // @ts-ignore
 import linecol from "line-column";
 
+// Ignored Regex
+const ignoredRegex = /^\W*\/\/ @as-covers: ignore.*$/gm;
 // -- Imports
 class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
-
+  public ignoredLines = new Set<number>();
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     super.visitBinaryExpression(expr);
@@ -64,6 +66,8 @@ class CoverTransform extends BaseVisitor {
         // Turn coordinates into variables
         const rightLine = rightLc.line;
         const rightCol = rightLc.col;
+        // Stop if there is a `@as-covers: ignore` comment
+        if (this.ignoredLines.has(rightLine)) return;
         // Create id. (Hash)
         const rightId = createPointID(
           name,
@@ -106,6 +110,7 @@ class CoverTransform extends BaseVisitor {
       const funcLc = this.linecol.fromIndex(dec.range.start);
       const funcLine = funcLc.line;
       const funcCol = funcLc.col;
+      if (this.ignoredLines.has(funcLine)) return;
       const funcId = createPointID(
         name,
         funcLine,
@@ -142,6 +147,7 @@ class CoverTransform extends BaseVisitor {
       const parmLc = this.linecol.fromIndex(node.initializer.range.start);
       const parmLine = parmLc.line;
       const parmCol = parmLc.col;
+      if (this.ignoredLines.has(parmLine)) return;
       const parmId = createPointID(
         name,
         parmLine,
@@ -188,6 +194,7 @@ class CoverTransform extends BaseVisitor {
       const funcLine = funcLc.line;
       // Column
       const funcCol = funcLc.col;
+      if (this.ignoredLines.has(funcLine)) return;
       // Generate id hash from information
       const funcId = createPointID(
         name,
@@ -267,6 +274,7 @@ class CoverTransform extends BaseVisitor {
       const trueLc = this.linecol.fromIndex(ifTrue.range.start);
       const trueLine = trueLc.line;
       const trueCol = trueLc.col;
+      if (this.ignoredLines.has(trueLine)) return
       // Get id from hash
       const ifTrueId = createPointID(
         name,
@@ -305,6 +313,8 @@ class CoverTransform extends BaseVisitor {
       const falseLc = this.linecol.fromIndex(ifFalse.range.start);
       const falseLine = falseLc.line;
       const falseCol = falseLc.col;
+
+      if (this.ignoredLines.has(falseLine)) return;
       // Create id from hash
       const ifFalseId = createPointID(
         name,
@@ -365,6 +375,7 @@ class CoverTransform extends BaseVisitor {
     const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
+    if (this.ignoredLines.has(trueLine)) return;
     // Create id from hash
     const trueId = createPointID(
       name,
@@ -398,6 +409,7 @@ class CoverTransform extends BaseVisitor {
     const falseLc = this.linecol.fromIndex(falseExpression.range.start);
     const falseLine = falseLc.line;
     const falseCol = falseLc.col;
+    if (this.ignoredLines.has(falseLine)) return;
     // Create id from hash
     const falseId = createPointID(
       name,
@@ -441,6 +453,7 @@ class CoverTransform extends BaseVisitor {
     const caseLc = this.linecol.fromIndex(stmt.range.start);
     const caseLine = caseLc.line;
     const caseCol = caseLc.col;
+    if (this.ignoredLines.has(caseLine)) return;
     // Create id from hash
     const caseId = createPointID(name, caseLine, caseCol, "CoverType.Block");
     // Create declare statement
@@ -479,6 +492,7 @@ class CoverTransform extends BaseVisitor {
     const blockLC = this.linecol.fromIndex(node.range.start);
     const blockLine = blockLC.line;
     const blockCol = blockLC.col;
+    if (this.ignoredLines.has(blockLine)) return;
     // Create id from hash
     const blockCoverId = createPointID(
       name,
@@ -510,10 +524,21 @@ class CoverTransform extends BaseVisitor {
 
   // VisitSource utility.
   visitSource(source: Source) {
+    // Grab the file text
+    const text: string = source.text;
     // Create globalStatements array.
     this.globalStatements = [];
     // Create linecol function. (Base it off of the file text)
-    this.linecol = linecol(source.text);
+    this.linecol = linecol(text);
+    // Find @as-covers: ignore comments (Regex)
+    const foundIgnores = text.matchAll(ignoredRegex);
+    // Loop over all the found results
+    for (const ignored of foundIgnores) {
+      // Calculate line coordinates from linecol
+      const line = this.linecol.fromIndex(ignored.index!).line + 1;
+      // Add it into the set.
+      this.ignoredLines.add(line);
+    }
     // Visit each source
     super.visitSource(source);
     // Push global statements to that source.

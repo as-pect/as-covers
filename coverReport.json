@@ -1,0 +1,28 @@
+{
+  "myTest.ts": {
+    "overview": {
+      "covered": 0,
+      "uncovered": 2,
+      "total": "0%",
+      "types": {
+        "block": "0%",
+        "function": "0%",
+        "expression": false
+      }
+    },
+    "myTest.ts:4:32": {
+      "covered": false,
+      "id": 121638191,
+      "file": "myTest.ts",
+      "column": 32,
+      "line": 4
+    },
+    "myTest.ts:4:1": {
+      "covered": false,
+      "id": -1892507424,
+      "file": "myTest.ts",
+      "column": 1,
+      "line": 4
+    }
+  }
+}
