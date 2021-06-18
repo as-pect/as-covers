@@ -367,6 +367,8 @@ class CoverTransform extends BaseVisitor {
    * @param expr TernaryExpression
    */
   visitTernaryExpression(expr: TernaryExpression): void {
+    // Call to super
+    super.visitTernaryExpression(expr);
     // Cast the ifThen/Else into their own variables. (Prevents circularness)
     const trueExpression = expr.ifThen;
     const falseExpression = expr.ifElse;
@@ -412,37 +414,35 @@ class CoverTransform extends BaseVisitor {
     const falseLc = this.linecol.fromIndex(falseExpression.range.start);
     const falseLine = falseLc.line;
     const falseCol = falseLc.col;
-    if (this.ignoredLines.has(falseLine)) return;
-    // Create id from hash
-    const falseId = createPointID(
-      name,
-      falseLine,
-      falseCol,
-      "CoverType.Expression"
-    );
-    // Create coverDeclare staterment
-    const falseDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
-      true
-    );
-    const falseDeclareStatementSource = falseDeclareStatement.range.source;
+    if (!this.ignoredLines.has(falseLine)) {
+      // Create id from hash
+      const falseId = createPointID(
+        name,
+        falseLine,
+        falseCol,
+        "CoverType.Expression"
+      );
+      // Create coverDeclare staterment
+      const falseDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+        true
+      );
+      const falseDeclareStatementSource = falseDeclareStatement.range.source;
 
-    // Create cover expression and cast a ParenthesizedExpression
-    const falseCoverExpression = SimpleParser.parseExpression(
-      `(__cover(${falseId}), $$REPLACE_ME)`
-    ) as ParenthesizedExpression;
-    // Replace $$REPLACE_ME with the original value
-    (falseCoverExpression.expression as CommaExpression).expressions[1] =
-      falseExpression;
-    // Set the false (right) side as the cover expression
-    expr.ifElse = falseCoverExpression;
+      // Create cover expression and cast a ParenthesizedExpression
+      const falseCoverExpression = SimpleParser.parseExpression(
+        `(__cover(${falseId}), $$REPLACE_ME)`
+      ) as ParenthesizedExpression;
+      // Replace $$REPLACE_ME with the original value
+      (falseCoverExpression.expression as CommaExpression).expressions[1] =
+        falseExpression;
+      // Set the false (right) side as the cover expression
+      expr.ifElse = falseCoverExpression;
 
-    // Push to global and sources
-    this.sources.push(falseDeclareStatementSource);
-    this.globalStatements.push(falseDeclareStatement);
-
-    // Call to super
-    super.visitTernaryExpression(expr);
+      // Push to global and sources
+      this.sources.push(falseDeclareStatementSource);
+      this.globalStatements.push(falseDeclareStatement);
+    }
   }
   /**
    * Visits switch/case statements.
