@@ -378,7 +378,7 @@ class CoverTransform extends BaseVisitor {
     const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
-    if (this.ignoredLines.has(trueLine)) {
+    if (!this.ignoredLines.has(trueLine)) {
       // Create id from hash
       const trueId = createPointID(
         name,
