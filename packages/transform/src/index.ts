@@ -268,13 +268,13 @@ class CoverTransform extends BaseVisitor {
     const ifFalse = stmt.ifFalse;
     // Grab the name of the current file
     const name = stmt.range.source.normalizedPath;
+    // Coordinates
+    const trueLc = this.linecol.fromIndex(ifTrue.range.start);
+    const trueLine = trueLc.line;
+    const trueCol = trueLc.col;
+
     // If its not a block, convert it to a Block kind.
-    if (ifTrue.kind !== NodeKind.BLOCK) {
-      // Coordinates
-      const trueLc = this.linecol.fromIndex(ifTrue.range.start);
-      const trueLine = trueLc.line;
-      const trueCol = trueLc.col;
-      if (this.ignoredLines.has(trueLine)) return
+    if (ifTrue.kind !== NodeKind.BLOCK && !this.ignoredLines.has(trueLine)) {
       // Get id from hash
       const ifTrueId = createPointID(
         name,
@@ -308,43 +308,46 @@ class CoverTransform extends BaseVisitor {
       visitIfFalse = !!ifFalse;
     }
     // Handles false if statements
-    if (ifFalse && ifFalse.kind !== NodeKind.BLOCK) {
+    if (ifFalse) {
       // Calculate coordinates
       const falseLc = this.linecol.fromIndex(ifFalse.range.start);
       const falseLine = falseLc.line;
       const falseCol = falseLc.col;
-
-      if (this.ignoredLines.has(falseLine)) return;
-      // Create id from hash
-      const ifFalseId = createPointID(
-        name,
-        falseLine,
-        falseCol,
-        "CoverType.Expression"
-      );
-      // Create coverDeclare statement
-      const coverDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
-        true
-      );
-      // Grab coverDeclare statement source
-      const coverDeclareStatementSource = coverDeclareStatement.range.source;
-      // Create new cover statement as a block.
-      const coverStatement = SimpleParser.parseStatement(
-        `{__cover(${ifFalseId})};`,
-        true
-      ) as BlockStatement;
-      // Add old body right after __cover(id)
-      coverStatement.statements.push(ifFalse);
-      // Set the body to the coverStatement
-      stmt.ifFalse = coverStatement;
-      // Push coverDeclare statement source to sources
-      this.sources.push(coverDeclareStatementSource);
-      // Push to globalStatements
-      this.globalStatements.push(coverDeclareStatement);
-      // Double-check prevention
-      visitIfTrue = true;
-      visitIfFalse = true;
+      if (
+        ifFalse.kind !== NodeKind.BLOCK &&
+        !this.ignoredLines.has(falseLine)
+      ) {
+        // Create id from hash
+        const ifFalseId = createPointID(
+          name,
+          falseLine,
+          falseCol,
+          "CoverType.Expression"
+        );
+        // Create coverDeclare statement
+        const coverDeclareStatement = SimpleParser.parseStatement(
+          `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+          true
+        );
+        // Grab coverDeclare statement source
+        const coverDeclareStatementSource = coverDeclareStatement.range.source;
+        // Create new cover statement as a block.
+        const coverStatement = SimpleParser.parseStatement(
+          `{__cover(${ifFalseId})};`,
+          true
+        ) as BlockStatement;
+        // Add old body right after __cover(id)
+        coverStatement.statements.push(ifFalse);
+        // Set the body to the coverStatement
+        stmt.ifFalse = coverStatement;
+        // Push coverDeclare statement source to sources
+        this.sources.push(coverDeclareStatementSource);
+        // Push to globalStatements
+        this.globalStatements.push(coverDeclareStatement);
+        // Double-check prevention
+        visitIfTrue = true;
+        visitIfFalse = true;
+      }
     }
     // Stops it from transfoming twice
     if (visitIfTrue || visitIfFalse) {
