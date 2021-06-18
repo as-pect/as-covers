@@ -378,35 +378,35 @@ class CoverTransform extends BaseVisitor {
     const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
-    if (this.ignoredLines.has(trueLine)) return;
-    // Create id from hash
-    const trueId = createPointID(
-      name,
-      trueLine,
-      trueCol,
-      "CoverType.Expression"
-    );
-    // Create declare statement
-    const trueDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
-      true
-    );
-    const trueDeclareStatementSource = trueDeclareStatement.range.source;
+    if (this.ignoredLines.has(trueLine)) {
+      // Create id from hash
+      const trueId = createPointID(
+        name,
+        trueLine,
+        trueCol,
+        "CoverType.Expression"
+      );
+      // Create declare statement
+      const trueDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
+        true
+      );
+      const trueDeclareStatementSource = trueDeclareStatement.range.source;
 
-    // Create cover expression
-    let trueCoverExpression = SimpleParser.parseExpression(
-      `(__cover(${trueId}), $$REPLACE_ME)`
-    ) as ParenthesizedExpression;
-    // Replace $$REPLACE_ME with the original value
-    (trueCoverExpression.expression as CommaExpression).expressions[1] =
-      trueExpression;
-    // Set the left (true) side to the cover expression
-    expr.ifThen = trueCoverExpression;
+      // Create cover expression
+      let trueCoverExpression = SimpleParser.parseExpression(
+        `(__cover(${trueId}), $$REPLACE_ME)`
+      ) as ParenthesizedExpression;
+      // Replace $$REPLACE_ME with the original value
+      (trueCoverExpression.expression as CommaExpression).expressions[1] =
+        trueExpression;
+      // Set the left (true) side to the cover expression
+      expr.ifThen = trueCoverExpression;
 
-    // Push declare statement to global and sources
-    this.sources.push(trueDeclareStatementSource);
-    this.globalStatements.push(trueDeclareStatement);
-
+      // Push declare statement to global and sources
+      this.sources.push(trueDeclareStatementSource);
+      this.globalStatements.push(trueDeclareStatement);
+    }
     // False
     // Get false cordinates
     const falseLc = this.linecol.fromIndex(falseExpression.range.start);
