@@ -42,7 +42,7 @@ import { SimpleParser, BaseVisitor } from "visitor-as";
 import linecol from "line-column";
 
 // Ignored Regex
-const ignoredRegex = /^\W*\/\/ @as-covers: ignore.*$/gm;
+const ignoredRegex = /^[\t ]*\/\/ @as-covers: ignore.*$/gm;
 // -- Imports
 class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
