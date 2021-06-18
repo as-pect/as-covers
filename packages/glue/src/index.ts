@@ -192,7 +192,6 @@ interface ICoversOptions {
  */
 export class Covers {
   private coverPoints = new Map<number, CoverPoint>();
-  // @ts-ignore
   // Its any because I can't find the type.
   private loader: any;
 
@@ -244,6 +243,8 @@ export class Covers {
     if (this.coverPoints.has(id)) return;
     // Get filePath. Needs --exportRuntime flag.
     const filePath = this.loader!.exports.__getString(filePtr);
+    // Ignore if it shouldn't be covered.
+    if (!mm.isMatch(filePath, this.options.files)) return;
     // Create new CoverPoint and add it to the main points.
     let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
     // Sets CoverPoint inside of this.coverPoints
@@ -255,9 +256,8 @@ export class Covers {
    * @param id - The id of the point.
    */
   private cover(id: number): void {
-    // Throws if the id does not exist.
-    if (!this.coverPoints.has(id))
-      throw new Error("Cannot cover point that does not exist.");
+    // If it should be ignored, return.
+    if (!this.coverPoints.has(id)) return;
     // Grab the CoverPoint
     let coverPoint = this.coverPoints.get(id)!;
     // Set it to covered
@@ -289,9 +289,6 @@ export class Covers {
     for (const [_, coverPoint] of this.coverPoints) {
       // Grab filename
       const fileName = coverPoint.file;
-
-      if (this.options.files && !mm.isMatch(fileName, this.options.files))
-        continue;
 
       if (!results.has(fileName))
         results.set(fileName, new CoverPointReport(fileName));

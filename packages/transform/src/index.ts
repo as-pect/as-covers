@@ -41,12 +41,14 @@ import { SimpleParser, BaseVisitor } from "visitor-as";
 // @ts-ignore
 import linecol from "line-column";
 
+// Ignored Regex
+const ignoredRegex = /^\W*\/\/ @as-covers: ignore.*$/gm;
 // -- Imports
 class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public sources: Source[] = [];
-
+  public ignoredLines = new Set<number>();
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     super.visitBinaryExpression(expr);
@@ -64,6 +66,8 @@ class CoverTransform extends BaseVisitor {
         // Turn coordinates into variables
         const rightLine = rightLc.line;
         const rightCol = rightLc.col;
+        // Stop if there is a `@as-covers: ignore` comment
+        if (this.ignoredLines.has(rightLine)) return;
         // Create id. (Hash)
         const rightId = createPointID(
           name,
@@ -106,6 +110,7 @@ class CoverTransform extends BaseVisitor {
       const funcLc = this.linecol.fromIndex(dec.range.start);
       const funcLine = funcLc.line;
       const funcCol = funcLc.col;
+      if (this.ignoredLines.has(funcLine)) return;
       const funcId = createPointID(
         name,
         funcLine,
@@ -142,6 +147,7 @@ class CoverTransform extends BaseVisitor {
       const parmLc = this.linecol.fromIndex(node.initializer.range.start);
       const parmLine = parmLc.line;
       const parmCol = parmLc.col;
+      if (this.ignoredLines.has(parmLine)) return;
       const parmId = createPointID(
         name,
         parmLine,
@@ -188,6 +194,7 @@ class CoverTransform extends BaseVisitor {
       const funcLine = funcLc.line;
       // Column
       const funcCol = funcLc.col;
+      if (this.ignoredLines.has(funcLine)) return;
       // Generate id hash from information
       const funcId = createPointID(
         name,
@@ -261,12 +268,13 @@ class CoverTransform extends BaseVisitor {
     const ifFalse = stmt.ifFalse;
     // Grab the name of the current file
     const name = stmt.range.source.normalizedPath;
+    // Coordinates
+    const trueLc = this.linecol.fromIndex(ifTrue.range.start);
+    const trueLine = trueLc.line;
+    const trueCol = trueLc.col;
+
     // If its not a block, convert it to a Block kind.
-    if (ifTrue.kind !== NodeKind.BLOCK) {
-      // Coordinates
-      const trueLc = this.linecol.fromIndex(ifTrue.range.start);
-      const trueLine = trueLc.line;
-      const trueCol = trueLc.col;
+    if (ifTrue.kind !== NodeKind.BLOCK && !this.ignoredLines.has(trueLine)) {
       // Get id from hash
       const ifTrueId = createPointID(
         name,
@@ -300,41 +308,46 @@ class CoverTransform extends BaseVisitor {
       visitIfFalse = !!ifFalse;
     }
     // Handles false if statements
-    if (ifFalse && ifFalse.kind !== NodeKind.BLOCK) {
+    if (ifFalse) {
       // Calculate coordinates
       const falseLc = this.linecol.fromIndex(ifFalse.range.start);
       const falseLine = falseLc.line;
       const falseCol = falseLc.col;
-      // Create id from hash
-      const ifFalseId = createPointID(
-        name,
-        falseLine,
-        falseCol,
-        "CoverType.Expression"
-      );
-      // Create coverDeclare statement
-      const coverDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
-        true
-      );
-      // Grab coverDeclare statement source
-      const coverDeclareStatementSource = coverDeclareStatement.range.source;
-      // Create new cover statement as a block.
-      const coverStatement = SimpleParser.parseStatement(
-        `{__cover(${ifFalseId})};`,
-        true
-      ) as BlockStatement;
-      // Add old body right after __cover(id)
-      coverStatement.statements.push(ifFalse);
-      // Set the body to the coverStatement
-      stmt.ifFalse = coverStatement;
-      // Push coverDeclare statement source to sources
-      this.sources.push(coverDeclareStatementSource);
-      // Push to globalStatements
-      this.globalStatements.push(coverDeclareStatement);
-      // Double-check prevention
-      visitIfTrue = true;
-      visitIfFalse = true;
+      if (
+        ifFalse.kind !== NodeKind.BLOCK &&
+        !this.ignoredLines.has(falseLine)
+      ) {
+        // Create id from hash
+        const ifFalseId = createPointID(
+          name,
+          falseLine,
+          falseCol,
+          "CoverType.Expression"
+        );
+        // Create coverDeclare statement
+        const coverDeclareStatement = SimpleParser.parseStatement(
+          `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+          true
+        );
+        // Grab coverDeclare statement source
+        const coverDeclareStatementSource = coverDeclareStatement.range.source;
+        // Create new cover statement as a block.
+        const coverStatement = SimpleParser.parseStatement(
+          `{__cover(${ifFalseId})};`,
+          true
+        ) as BlockStatement;
+        // Add old body right after __cover(id)
+        coverStatement.statements.push(ifFalse);
+        // Set the body to the coverStatement
+        stmt.ifFalse = coverStatement;
+        // Push coverDeclare statement source to sources
+        this.sources.push(coverDeclareStatementSource);
+        // Push to globalStatements
+        this.globalStatements.push(coverDeclareStatement);
+        // Double-check prevention
+        visitIfTrue = true;
+        visitIfFalse = true;
+      }
     }
     // Stops it from transfoming twice
     if (visitIfTrue || visitIfFalse) {
@@ -354,6 +367,8 @@ class CoverTransform extends BaseVisitor {
    * @param expr TernaryExpression
    */
   visitTernaryExpression(expr: TernaryExpression): void {
+    // Call to super
+    super.visitTernaryExpression(expr);
     // Cast the ifThen/Else into their own variables. (Prevents circularness)
     const trueExpression = expr.ifThen;
     const falseExpression = expr.ifElse;
@@ -365,69 +380,69 @@ class CoverTransform extends BaseVisitor {
     const trueLc = this.linecol.fromIndex(trueExpression.range.start);
     const trueLine = trueLc.line;
     const trueCol = trueLc.col;
-    // Create id from hash
-    const trueId = createPointID(
-      name,
-      trueLine,
-      trueCol,
-      "CoverType.Expression"
-    );
-    // Create declare statement
-    const trueDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
-      true
-    );
-    const trueDeclareStatementSource = trueDeclareStatement.range.source;
+    if (!this.ignoredLines.has(trueLine)) {
+      // Create id from hash
+      const trueId = createPointID(
+        name,
+        trueLine,
+        trueCol,
+        "CoverType.Expression"
+      );
+      // Create declare statement
+      const trueDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
+        true
+      );
+      const trueDeclareStatementSource = trueDeclareStatement.range.source;
 
-    // Create cover expression
-    let trueCoverExpression = SimpleParser.parseExpression(
-      `(__cover(${trueId}), $$REPLACE_ME)`
-    ) as ParenthesizedExpression;
-    // Replace $$REPLACE_ME with the original value
-    (trueCoverExpression.expression as CommaExpression).expressions[1] =
-      trueExpression;
-    // Set the left (true) side to the cover expression
-    expr.ifThen = trueCoverExpression;
+      // Create cover expression
+      let trueCoverExpression = SimpleParser.parseExpression(
+        `(__cover(${trueId}), $$REPLACE_ME)`
+      ) as ParenthesizedExpression;
+      // Replace $$REPLACE_ME with the original value
+      (trueCoverExpression.expression as CommaExpression).expressions[1] =
+        trueExpression;
+      // Set the left (true) side to the cover expression
+      expr.ifThen = trueCoverExpression;
 
-    // Push declare statement to global and sources
-    this.sources.push(trueDeclareStatementSource);
-    this.globalStatements.push(trueDeclareStatement);
-
+      // Push declare statement to global and sources
+      this.sources.push(trueDeclareStatementSource);
+      this.globalStatements.push(trueDeclareStatement);
+    }
     // False
     // Get false cordinates
     const falseLc = this.linecol.fromIndex(falseExpression.range.start);
     const falseLine = falseLc.line;
     const falseCol = falseLc.col;
-    // Create id from hash
-    const falseId = createPointID(
-      name,
-      falseLine,
-      falseCol,
-      "CoverType.Expression"
-    );
-    // Create coverDeclare staterment
-    const falseDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
-      true
-    );
-    const falseDeclareStatementSource = falseDeclareStatement.range.source;
+    if (!this.ignoredLines.has(falseLine)) {
+      // Create id from hash
+      const falseId = createPointID(
+        name,
+        falseLine,
+        falseCol,
+        "CoverType.Expression"
+      );
+      // Create coverDeclare staterment
+      const falseDeclareStatement = SimpleParser.parseStatement(
+        `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
+        true
+      );
+      const falseDeclareStatementSource = falseDeclareStatement.range.source;
 
-    // Create cover expression and cast a ParenthesizedExpression
-    const falseCoverExpression = SimpleParser.parseExpression(
-      `(__cover(${falseId}), $$REPLACE_ME)`
-    ) as ParenthesizedExpression;
-    // Replace $$REPLACE_ME with the original value
-    (falseCoverExpression.expression as CommaExpression).expressions[1] =
-      falseExpression;
-    // Set the false (right) side as the cover expression
-    expr.ifElse = falseCoverExpression;
+      // Create cover expression and cast a ParenthesizedExpression
+      const falseCoverExpression = SimpleParser.parseExpression(
+        `(__cover(${falseId}), $$REPLACE_ME)`
+      ) as ParenthesizedExpression;
+      // Replace $$REPLACE_ME with the original value
+      (falseCoverExpression.expression as CommaExpression).expressions[1] =
+        falseExpression;
+      // Set the false (right) side as the cover expression
+      expr.ifElse = falseCoverExpression;
 
-    // Push to global and sources
-    this.sources.push(falseDeclareStatementSource);
-    this.globalStatements.push(falseDeclareStatement);
-
-    // Call to super
-    super.visitTernaryExpression(expr);
+      // Push to global and sources
+      this.sources.push(falseDeclareStatementSource);
+      this.globalStatements.push(falseDeclareStatement);
+    }
   }
   /**
    * Visits switch/case statements.
@@ -441,6 +456,7 @@ class CoverTransform extends BaseVisitor {
     const caseLc = this.linecol.fromIndex(stmt.range.start);
     const caseLine = caseLc.line;
     const caseCol = caseLc.col;
+    if (this.ignoredLines.has(caseLine)) return;
     // Create id from hash
     const caseId = createPointID(name, caseLine, caseCol, "CoverType.Block");
     // Create declare statement
@@ -479,6 +495,7 @@ class CoverTransform extends BaseVisitor {
     const blockLC = this.linecol.fromIndex(node.range.start);
     const blockLine = blockLC.line;
     const blockCol = blockLC.col;
+    if (this.ignoredLines.has(blockLine)) return;
     // Create id from hash
     const blockCoverId = createPointID(
       name,
@@ -510,10 +527,21 @@ class CoverTransform extends BaseVisitor {
 
   // VisitSource utility.
   visitSource(source: Source) {
+    // Grab the file text
+    const text: string = source.text;
     // Create globalStatements array.
     this.globalStatements = [];
     // Create linecol function. (Base it off of the file text)
-    this.linecol = linecol(source.text);
+    this.linecol = linecol(text);
+    // Find @as-covers: ignore comments (Regex)
+    const foundIgnores = text.matchAll(ignoredRegex);
+    // Loop over all the found results
+    for (const ignored of foundIgnores) {
+      // Calculate line coordinates from linecol
+      const line = this.linecol.fromIndex(ignored.index!).line + 1;
+      // Add it into the set.
+      this.ignoredLines.add(line);
+    }
     // Visit each source
     super.visitSource(source);
     // Push global statements to that source.
