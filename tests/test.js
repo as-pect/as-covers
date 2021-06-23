@@ -9,7 +9,7 @@ const covers = new Covers();
 const Linecol = require('line-column')
 
 const wasmModule = loader.instantiateSync(
-  fs.readFileSync("./output/output.wasm"),
+  fs.readFileSync("./tests/output/output.wasm"),
   covers.installImports({})
 );
 covers.registerLoader(wasmModule);
@@ -18,7 +18,12 @@ wasmModule.exports._start();
 
 const JSONreport = JSON.stringify(covers.toJSON(), null, 2)
 
-const resultSnapShot = fs.readFileSync('./output/coverReportSnapshot.json').toString()
+if (process.argv.includes("--create")) {
+  fs.writeFileSync("./tests/output/coverReportSnapshot.json", JSONreport);
+  process.exit(0);
+}
+
+const resultSnapShot = fs.readFileSync('./tests/output/coverReportSnapshot.json').toString()
 
 const linecol = Linecol(resultSnapShot)
 
@@ -38,7 +43,7 @@ if (resultSnapShot === JSONreport) {
 }
 
 fs.writeFileSync(
-  "./output/coverReport.json",
+  "./tests/output/coverReport.json",
   JSONreport
 );
 

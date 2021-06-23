@@ -5,11 +5,10 @@
   "main": "index.js",
   "scripts": {
     "postinstall": "lerna bootstrap",
-    "test": "run-s build:src build:compiler run:compiler",
+    "test": "run-s build:src build:test run:test",
     "build:src": "lerna run tsc",
-    "build:compiler": "asc --lib ./packages/assembly/index.ts --config ./submodules/assemblyscript/src/asconfig.json --target untouched --transform ./packages/transform/lib/index.js",
-    "run:compiler": "asc --config ./submodules/assemblyscript/src/asconfig.json --target untouched --wasm ./submodules/assemblyscript/out/assemblyscript.untouched.wasm",
-    "buildTest": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/src/index.ts --textFile ./tests/output/output.wat -o ./tests/output/output.wasm --explicitStart --exportRuntime"
+    "build:test": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/src/index.ts --textFile ./tests/output/output.wat -o ./tests/output/output.wasm --explicitStart --exportRuntime",
+    "run:test": "node tests/test"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "contributors": [
