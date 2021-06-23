@@ -565,7 +565,10 @@ export = class MyTransform extends Transform {
     // Create different file names to prevent interference (increment)
     let i = 0;
     for (const source of transformer.sources) {
-      source.internalPath += `${i++}.ts`;
+      let id = i++;
+      source.normalizedPath = `~/lib/as-covers${id}.ts`;
+      source.internalPath = `~/lib/as-covers${id}`;
+      source.simplePath = `~/lib/as-covers${id}`;
       parser.sources.push(source);
       // Modify file names (incremental)
     }
