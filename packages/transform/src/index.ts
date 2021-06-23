@@ -364,7 +364,7 @@ class CoverTransform extends BaseVisitor {
    * @param expr TernaryExpression
    */
   visitTernaryExpression(expr: TernaryExpression): void {
-    // Call to super
+    // Call to super first.
     super.visitTernaryExpression(expr);
     // Cast the ifThen/Else into their own variables. (Prevents circularness)
     const trueExpression = expr.ifThen;
