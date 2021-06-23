@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/transform",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
   "scripts": {
