@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Core code coverage package for as-covers.",
   "main": "index.js",
   "scripts": {},
@@ -12,6 +12,6 @@
   "dependencies": {
     "@as-covers/assembly": "^0.2.0",
     "@as-covers/glue": "^0.2.0",
-    "@as-covers/transform": "^0.2.0"
+    "@as-covers/transform": "^0.2.1"
   }
 }
