@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/glue",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Glue code for code coverage using node.js",
   "main": "lib/index.js",
   "scripts": {
