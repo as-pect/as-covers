@@ -32,14 +32,14 @@ import {
   SwitchCase,
   TernaryExpression,
   Token,
-  Transform,
-} from "visitor-as/as";
+} from "assemblyscript/dist/assemblyscript.js";
+import { Transform } from "assemblyscript/dist/transform.js";
 
-import { createPointID } from "./util";
+import { createPointID } from "./util.js";
 
-import { SimpleParser, BaseVisitor } from "visitor-as";
+import { SimpleParser, BaseVisitor } from "@roaminroe/visitor-as";
 
-import { RangeTransform } from "visitor-as/dist/transformRange";
+import { RangeTransform } from "@roaminroe/visitor-as/dist/transformRange.js";
 // @ts-ignore
 import linecol from "line-column";
 
@@ -549,7 +549,7 @@ class CoverTransform extends BaseVisitor {
 }
 
 // Transform class
-export = class MyTransform extends Transform {
+export default class MyTransform extends Transform {
   // Trigger the transform after parse.
   afterParse(parser: Parser): void {
     // Create new transform
