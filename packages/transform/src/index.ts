@@ -37,9 +37,9 @@ import { Transform } from "assemblyscript/dist/transform.js";
 
 import { createPointID } from "./util.js";
 
-import { SimpleParser, BaseVisitor } from "@roaminroe/visitor-as";
+import { SimpleParser, BaseVisitor } from "visitor-as";
 
-import { RangeTransform } from "@roaminroe/visitor-as/dist/transformRange.js";
+import { RangeTransform } from "visitor-as/dist/transformRange.js";
 // @ts-ignore
 import linecol from "line-column";
 
