@@ -242,7 +242,7 @@ export class Covers {
     // Cover points are immutable. (so it's already been added)
     if (this.coverPoints.has(id)) return;
     // Get filePath. Needs --exportRuntime flag.
-    const filePath = this.loader!.exports.__getString(filePtr);
+    const filePath = this.loader ? this.loader.exports.__getString(filePtr) : '';
     // Ignore if it shouldn't be covered.
     if (!mm.isMatch(filePath, this.options.files)) return;
     // Create new CoverPoint and add it to the main points.

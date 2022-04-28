@@ -4,7 +4,7 @@
 
 const loader = require("@assemblyscript/loader");
 const fs = require("fs");
-const { Covers } = require("../packages/glue/lib/index");
+const { Covers } = require("../packages/glue/lib/index.js");
 const covers = new Covers();
 const Linecol = require('line-column')
 

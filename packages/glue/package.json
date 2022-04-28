@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/glue",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Glue code for code coverage using node.js",
   "main": "lib/index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "table": "^6.7.1"
   },
   "devDependencies": {
-    "@assemblyscript/loader": "^0.19.3",
+    "@assemblyscript/loader": "^0.20.6",
     "@types/table": "^6.3.2"
   },
   "files": [

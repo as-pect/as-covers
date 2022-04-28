@@ -1,8 +1,9 @@
 {
   "name": "@as-covers/transform",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
+  "type": "module",
   "scripts": {
     "tsc": "tsc",
     "test": "node test/index.js"
@@ -18,7 +19,7 @@
   },
   "dependencies": {
     "line-column": "^1.0.2",
-    "visitor-as": "^0.6.0"
+    "visitor-as": "^0.9.0"
   },
   "files": [
     "lib"
