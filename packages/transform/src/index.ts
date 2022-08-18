@@ -32,15 +32,18 @@ import {
   SwitchCase,
   TernaryExpression,
   Token,
-  Transform,
-} from "visitor-as/as";
+  // @ts-ignore
+} from "assemblyscript";
 
-import { createPointID } from "./util";
+// @ts-ignore
+import { Transform } from "assemblyscript/transform";
+
+import { createPointID } from "./util.js";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
 
-import { RangeTransform } from "visitor-as/dist/transformRange";
-// @ts-ignore
+import { RangeTransform } from "visitor-as/dist/transformRange.js";
+
 import linecol from "line-column";
 
 // Ignored Regex
@@ -549,7 +552,7 @@ class CoverTransform extends BaseVisitor {
 }
 
 // Transform class
-export = class MyTransform extends Transform {
+export default class MyTransform extends Transform {
   // Trigger the transform after parse.
   afterParse(parser: Parser): void {
     // Create new transform

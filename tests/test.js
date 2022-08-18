@@ -1,17 +1,17 @@
 // This is the standard test for AS-Covers.
 // If it fails, something was changed that broke it.
 // To add new checks, just copy-and-paste coverReport.json to coverReportSnapshot.json.
-
-const loader = require("@assemblyscript/loader");
-const fs = require("fs");
-const { Covers } = require("../packages/glue/lib/index");
+import loader from "@assemblyscript/loader";
+import fs from "fs";
+import { Covers } from "../packages/glue/lib/index.js";
 const covers = new Covers();
-const Linecol = require('line-column')
-
+import Linecol from "line-column";
+console.log("-- Instantiating module. --");
 const wasmModule = loader.instantiateSync(
   fs.readFileSync("./tests/output/output.wasm"),
   covers.installImports({})
-);
+  );
+  console.log("-- Registering loader. --");
 covers.registerLoader(wasmModule);
 
 wasmModule.exports._start();

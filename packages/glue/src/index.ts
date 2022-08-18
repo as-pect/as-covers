@@ -1,7 +1,8 @@
 /**
  * Import micromatch module. (File globbing)
  */
-const mm = require("micromatch");
+// @ts-ignore
+import mm from "micromatch";
 /**
  * Import `table` module for report text output
  */
@@ -219,6 +220,7 @@ export class Covers {
    * @param loader - loader
    */
   registerLoader(loader: any): void {
+    console.log("registering loader", loader);
     this.loader = loader;
   }
 
