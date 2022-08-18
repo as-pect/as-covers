@@ -18,6 +18,7 @@ import {
   BinaryExpression,
   BlockStatement,
   CommaExpression,
+  ExportStatement,
   ExpressionStatement,
   FunctionDeclaration,
   IfStatement,
@@ -28,15 +29,14 @@ import {
   Parser,
   ReturnStatement,
   Source,
+  SourceKind,
   Statement,
   SwitchCase,
   TernaryExpression,
   Token,
-  // @ts-ignore
-} from "assemblyscript";
+} from "assemblyscript/dist/assemblyscript.js";
 
-// @ts-ignore
-import { Transform } from "assemblyscript/transform";
+import { Transform } from "assemblyscript/dist/transform.js";
 
 import { createPointID } from "./util.js";
 
@@ -53,6 +53,8 @@ class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public ignoredLines = new Set<number>();
+  public entry: Source | null = null;
+
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     super.visitBinaryExpression(expr);
@@ -546,8 +548,10 @@ class CoverTransform extends BaseVisitor {
     }
     // Visit each source
     super.visitSource(source);
-    // Push global statements to that source.
-    source.statements.unshift(...this.globalStatements);
+
+    if (source.sourceKind == SourceKind.USER_ENTRY) {
+      this.entry = this.entry || source;
+    }
   }
 }
 
@@ -564,5 +568,12 @@ export default class MyTransform extends Transform {
         transformer.visit(source);
       }
     }
+
+    const entry = transformer.entry;
+    if (entry != null) {
+      let stmt = SimpleParser.parseTopLevelStatement("export function __asCovers_declare(): void {}");
+      let range = new RangeTransform(entry);
+      // TODO: Find function export from stmt, and push global statements to it
+    } else throw new Error("Cannot find user entry.");
   }
 };

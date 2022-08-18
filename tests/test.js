@@ -10,11 +10,11 @@ console.log("-- Instantiating module. --");
 const wasmModule = loader.instantiateSync(
   fs.readFileSync("./tests/output/output.wasm"),
   covers.installImports({})
-  );
-  console.log("-- Registering loader. --");
+);
+console.log("-- Registering loader. --");
 covers.registerLoader(wasmModule);
 
-wasmModule.exports._start();
+//wasmModule.exports.run_tests();
 
 const JSONreport = JSON.stringify(covers.toJSON(), null, 2)
 
