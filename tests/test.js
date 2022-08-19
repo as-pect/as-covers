@@ -1,29 +1,35 @@
 // This is the standard test for AS-Covers.
 // If it fails, something was changed that broke it.
 // To add new checks, just copy-and-paste coverReport.json to coverReportSnapshot.json.
-
-const loader = require("@assemblyscript/loader");
-const fs = require("fs");
-const { Covers } = require("../packages/glue/lib/index");
+import loader from "@assemblyscript/loader";
+import fs from "fs";
+import { Covers } from "../packages/glue/lib/index.js";
 const covers = new Covers();
-const Linecol = require('line-column')
+import Linecol from "line-column";
 
+const coverReportSnapshotLocation = "./tests/output/coverReportSnapshot.json";
+
+console.log("-- Instantiating module. --");
 const wasmModule = loader.instantiateSync(
   fs.readFileSync("./tests/output/output.wasm"),
   covers.installImports({})
 );
+console.log("-- Registering loader. --");
 covers.registerLoader(wasmModule);
 
+console.log("-- Starting module execution --");
 wasmModule.exports._start();
 
 const JSONreport = JSON.stringify(covers.toJSON(), null, 2)
 
 if (process.argv.includes("--create")) {
-  fs.writeFileSync("./tests/output/coverReportSnapshot.json", JSONreport);
+
+  console.log("-- Creating Snapshot. --");
+  fs.writeFileSync(coverReportSnapshotLocation, JSONreport);
   process.exit(0);
 }
 
-const resultSnapShot = fs.readFileSync('./tests/output/coverReportSnapshot.json').toString()
+const resultSnapShot = fs.readFileSync(coverReportSnapshotLocation).toString()
 
 const linecol = Linecol(resultSnapShot)
 
@@ -31,7 +37,7 @@ for (let i = 0; i < resultSnapShot.length; i++) {
 
   if (JSONreport[i] !== resultSnapShot[i]) {
     const lc = linecol.fromIndex(i+1)
-    throw new Error(`Result Failed at ./output/coverReport.json:${lc.line}:${lc.col}`)
+    throw new Error(`Result Failed at ${coverReportSnapshotLocation}:${lc.line}:${lc.col}`)
   }
 
 }
@@ -43,7 +49,7 @@ if (resultSnapShot === JSONreport) {
 }
 
 fs.writeFileSync(
-  "./tests/output/coverReport.json",
+  coverReportSnapshotLocation,
   JSONreport
 );
 

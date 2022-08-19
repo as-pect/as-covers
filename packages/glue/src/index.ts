@@ -1,7 +1,8 @@
 /**
  * Import micromatch module. (File globbing)
  */
-const mm = require("micromatch");
+// @ts-ignore
+import mm from "micromatch";
 /**
  * Import `table` module for report text output
  */
@@ -239,6 +240,7 @@ export class Covers {
     col: number,
     coverType: CoverPointType
   ): void {
+    console.log("-- Declaring cover point. --", id);
     // Cover points are immutable. (so it's already been added)
     if (this.coverPoints.has(id)) return;
     // Get filePath. Needs --exportRuntime flag.

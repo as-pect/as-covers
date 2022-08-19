@@ -32,15 +32,16 @@ import {
   SwitchCase,
   TernaryExpression,
   Token,
-  Transform,
-} from "visitor-as/as";
+} from "assemblyscript/dist/assemblyscript.js";
 
-import { createPointID } from "./util";
+import { Transform } from "assemblyscript/dist/transform.js";
+
+import { createPointID } from "./util.js";
 
 import { SimpleParser, BaseVisitor } from "visitor-as";
 
-import { RangeTransform } from "visitor-as/dist/transformRange";
-// @ts-ignore
+import { RangeTransform } from "visitor-as/dist/transformRange.js";
+
 import linecol from "line-column";
 
 // Ignored Regex
@@ -50,6 +51,8 @@ class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
   public ignoredLines = new Set<number>();
+  public entry: Source | null = null;
+
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     super.visitBinaryExpression(expr);
@@ -545,11 +548,12 @@ class CoverTransform extends BaseVisitor {
     super.visitSource(source);
     // Push global statements to that source.
     source.statements.unshift(...this.globalStatements);
+
   }
 }
 
 // Transform class
-export = class MyTransform extends Transform {
+export default class MyTransform extends Transform {
   // Trigger the transform after parse.
   afterParse(parser: Parser): void {
     // Create new transform
