@@ -6,6 +6,9 @@ import fs from "fs";
 import { Covers } from "../packages/glue/lib/index.js";
 const covers = new Covers();
 import Linecol from "line-column";
+
+const coverReportSnapshotLocation = "./tests/output/coverReportSnapshot.json";
+
 console.log("-- Instantiating module. --");
 const wasmModule = loader.instantiateSync(
   fs.readFileSync("./tests/output/output.wasm"),
@@ -22,11 +25,11 @@ const JSONreport = JSON.stringify(covers.toJSON(), null, 2)
 if (process.argv.includes("--create")) {
 
   console.log("-- Creating Snapshot. --");
-  fs.writeFileSync("./tests/output/coverReportSnapshot.json", JSONreport);
+  fs.writeFileSync(coverReportSnapshotLocation, JSONreport);
   process.exit(0);
 }
 
-const resultSnapShot = fs.readFileSync('./tests/output/coverReportSnapshot.json').toString()
+const resultSnapShot = fs.readFileSync(coverReportSnapshotLocation).toString()
 
 const linecol = Linecol(resultSnapShot)
 
@@ -34,7 +37,7 @@ for (let i = 0; i < resultSnapShot.length; i++) {
 
   if (JSONreport[i] !== resultSnapShot[i]) {
     const lc = linecol.fromIndex(i+1)
-    throw new Error(`Result Failed at ./output/coverReport.json:${lc.line}:${lc.col}`)
+    throw new Error(`Result Failed at ${coverReportSnapshotLocation}:${lc.line}:${lc.col}`)
   }
 
 }
@@ -46,7 +49,7 @@ if (resultSnapShot === JSONreport) {
 }
 
 fs.writeFileSync(
-  "./tests/output/coverReport.json",
+  coverReportSnapshotLocation,
   JSONreport
 );
 

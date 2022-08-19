@@ -220,7 +220,6 @@ export class Covers {
    * @param loader - loader
    */
   registerLoader(loader: any): void {
-    console.log("registering loader", loader);
     this.loader = loader;
   }
 

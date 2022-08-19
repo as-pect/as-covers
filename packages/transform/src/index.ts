@@ -28,7 +28,6 @@ import {
   Parser,
   ReturnStatement,
   Source,
-  SourceKind,
   Statement,
   SwitchCase,
   TernaryExpression,
@@ -547,10 +546,9 @@ class CoverTransform extends BaseVisitor {
     }
     // Visit each source
     super.visitSource(source);
+    // Push global statements to that source.
+    source.statements.unshift(...this.globalStatements);
 
-    if (source.sourceKind == SourceKind.USER_ENTRY) {
-      this.entry = this.entry || source;
-    }
   }
 }
 
