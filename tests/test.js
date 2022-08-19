@@ -14,11 +14,14 @@ const wasmModule = loader.instantiateSync(
 console.log("-- Registering loader. --");
 covers.registerLoader(wasmModule);
 
-//wasmModule.exports.run_tests();
+console.log("-- Starting module execution --");
+wasmModule.exports._start();
 
 const JSONreport = JSON.stringify(covers.toJSON(), null, 2)
 
 if (process.argv.includes("--create")) {
+
+  console.log("-- Creating Snapshot. --");
   fs.writeFileSync("./tests/output/coverReportSnapshot.json", JSONreport);
   process.exit(0);
 }
