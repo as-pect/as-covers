@@ -18,7 +18,6 @@ import {
   BinaryExpression,
   BlockStatement,
   CommaExpression,
-  ExportStatement,
   ExpressionStatement,
   FunctionDeclaration,
   IfStatement,
@@ -568,12 +567,5 @@ export default class MyTransform extends Transform {
         transformer.visit(source);
       }
     }
-
-    const entry = transformer.entry;
-    if (entry != null) {
-      let stmt = SimpleParser.parseTopLevelStatement("export function __asCovers_declare(): void {}");
-      let range = new RangeTransform(entry);
-      // TODO: Find function export from stmt, and push global statements to it
-    } else throw new Error("Cannot find user entry.");
   }
 };
