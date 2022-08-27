@@ -98,12 +98,12 @@
   call $~stack_check
   global.get $~lib/memory/__stack_pointer
   i64.const 0
-  i64.store
+  i64.store $0
   i32.const 32
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1656929021
   i32.const 19
@@ -114,7 +114,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 680652760
   i32.const 24
@@ -125,7 +125,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1216314007
   i32.const 26
@@ -136,7 +136,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1813501367
   i32.const 31
@@ -147,7 +147,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 583958250
   i32.const 33
@@ -158,7 +158,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1384128236
   i32.const 38
@@ -169,7 +169,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -226323534
   i32.const 38
@@ -180,7 +180,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 2097816477
   i32.const 40
@@ -191,7 +191,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1661511543
   i32.const 40
@@ -202,7 +202,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 824394804
   i32.const 47
@@ -213,7 +213,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1752755751
   i32.const 47
@@ -224,7 +224,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 6746354
   i32.const 49
@@ -235,7 +235,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1971610469
   i32.const 49
@@ -246,7 +246,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -599019831
   i32.const 56
@@ -257,7 +257,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1890509131
   i32.const 58
@@ -268,7 +268,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 188417635
   i32.const 65
@@ -279,7 +279,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 54404129
   i32.const 67
@@ -290,7 +290,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1687771449
   i32.const 72
@@ -301,7 +301,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1588026583
   i32.const 74
@@ -312,7 +312,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1629206142
   i32.const 77
@@ -323,7 +323,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -2130099907
   i32.const 79
@@ -334,7 +334,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const -1589812793
   i32.const 81
@@ -345,7 +345,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1859609853
   i32.const 88
@@ -356,7 +356,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 398790090
   i32.const 88
@@ -367,7 +367,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 1046587270
   i32.const 90
@@ -378,7 +378,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store
+  i32.store $0
   local.get $1
   i32.const 768135699
   i32.const 90
@@ -404,13 +404,13 @@
   i32.const 0
   global.set $~argumentsLength
   global.get $tests/test/arrowFunc1
-  i32.load
+  i32.load $0
   call_indirect $0 (type $none_=>_none)
   call $tests/test/normalFunc1
   i32.const 0
   global.set $~argumentsLength
   global.get $tests/test/singleLineFunc1
-  i32.load
+  i32.load $0
   call_indirect $0 (type $none_=>_i32)
   drop
   i32.const 188417635
@@ -461,7 +461,7 @@
   local.set $1
   global.get $~lib/memory/__stack_pointer
   local.get $1
-  i32.store offset=4
+  i32.store $0 offset=4
   local.get $1
   call $tests/test/defaultPropFunc1
   f64.const 3.14
