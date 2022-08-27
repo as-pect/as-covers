@@ -1,6 +1,6 @@
 {
   "name": "@as-covers/core",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Core code coverage package for as-covers.",
   "main": "index.js",
   "scripts": {},
@@ -10,8 +10,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@as-covers/assembly": "^0.3.0",
-    "@as-covers/glue": "^0.3.0",
-    "@as-covers/transform": "^0.3.0"
+    "@as-covers/assembly": "^0.3.1",
+    "@as-covers/glue": "^0.3.1",
+    "@as-covers/transform": "^0.3.1"
   }
 }
