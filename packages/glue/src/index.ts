@@ -240,7 +240,6 @@ export class Covers {
     col: number,
     coverType: CoverPointType
   ): void {
-    console.log("-- Declaring cover point. --", id);
     // Cover points are immutable. (so it's already been added)
     if (this.coverPoints.has(id)) return;
     // Get filePath. Needs --exportRuntime flag.
