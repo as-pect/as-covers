@@ -1,12 +1,12 @@
 {
   "tests/test.ts": {
     "overview": {
-      "covered": 17,
-      "uncovered": 9,
-      "total": "65.4%",
+      "covered": 18,
+      "uncovered": 8,
+      "total": "69.2%",
       "types": {
         "block": "75%",
-        "function": "50%",
+        "function": "62.5%",
         "expression": true
       }
     },
@@ -102,7 +102,7 @@
       "line": 49
     },
     "tests/test.ts:56:25": {
-      "covered": false,
+      "covered": true,
       "id": -599019831,
       "file": "tests/test.ts",
       "column": 25,
