@@ -7,9 +7,11 @@
   "scripts": {
     "postinstall": "lerna bootstrap --hoist",
     "test": "run-s build:src build:test run:test",
+    "test:update-snapshots": "run-s build:src build:test run:test-update-snapshots",
     "build:src": "lerna run tsc",
     "build:test": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/lib/index.js --textFile ./tests/output/output.wat --outFile ./tests/output/output.wasm --exportStart _start",
-    "run:test": "node --enable-source-maps tests/test"
+    "run:test": "node --enable-source-maps tests/test",
+    "run:test-update-snapshots": "node --enable-source-maps tests/test --create"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "contributors": [
