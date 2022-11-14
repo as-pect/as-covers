@@ -25,6 +25,7 @@ import {
   NodeKind,
   ParameterNode,
   ParenthesizedExpression,
+  Node,
   Parser,
   ReturnStatement,
   Source,
@@ -59,8 +60,8 @@ class CoverTransform extends BaseVisitor {
     const name = expr.range.source.normalizedPath;
     // Switch/case (&& or ||)
     switch (expr.operator) {
-      case Token.BAR_BAR:
-      case Token.AMPERSAND_AMPERSAND: {
+      case Token.Bar_Bar:
+      case Token.Ampersand_Ampersand: {
         // If (&& or ||)
         // Get right expression (right side of the || or &&)
         const rightExpression = expr.right;
@@ -216,7 +217,7 @@ class CoverTransform extends BaseVisitor {
       this.globalStatements.push(funcDeclareStatement);
 
       // If the body is an expression, convert it to a block. (We need it to be a block because of multiple lines.)
-      if (dec.body.kind === NodeKind.EXPRESSION) {
+      if (dec.body.kind === NodeKind.Export) {
         // Parse string as BlockStatement. (We replace the function's body with this.)
         const bodyStatement = SimpleParser.parseStatement(`
         {
@@ -230,7 +231,7 @@ class CoverTransform extends BaseVisitor {
         // Grab the body and cast it as an ExpressionStatement
         const body = dec.body as ExpressionStatement;
         // Manipulate the arrowKind. Make sure it works.
-        dec.arrowKind = ArrowKind.ARROW_SINGLE;
+        dec.arrowKind = ArrowKind.Single;
         // Set the return value as the origianal body.
         bodyReturn.value = body.expression;
 
@@ -245,7 +246,18 @@ class CoverTransform extends BaseVisitor {
         );
         replacer.visit(funcCoverStatement);
 
-        // Grab the body and cast it as a BlockStatement
+        // Handle arrow functions
+        if (!(dec.body instanceof BlockStatement)) {
+          if (!(dec.body instanceof ExpressionStatement)) {
+            throw new TypeError("Expected function declaration body to be a block or expression");
+          }
+
+          const expr = (dec.body as ExpressionStatement).expression;
+          dec.body = Node.createBlockStatement([
+            Node.createReturnStatement(expr, expr.range)
+          ], expr.range);
+        }
+
         const bodyBlock = dec.body as BlockStatement;
         // Push the cover statement to the top of the function body.
         bodyBlock.statements.unshift(funcCoverStatement);
@@ -273,7 +285,7 @@ class CoverTransform extends BaseVisitor {
     const trueCol = trueLc.col;
 
     // If its not a block, convert it to a Block kind.
-    if (ifTrue.kind !== NodeKind.BLOCK && !this.ignoredLines.has(trueLine)) {
+    if (ifTrue.kind !== NodeKind.Block && !this.ignoredLines.has(trueLine)) {
       const replacer = new RangeTransform(ifTrue);
       // Get id from hash
       const ifTrueId = createPointID(
@@ -313,7 +325,7 @@ class CoverTransform extends BaseVisitor {
       const falseLine = falseLc.line;
       const falseCol = falseLc.col;
       if (
-        ifFalse.kind !== NodeKind.BLOCK &&
+        ifFalse.kind !== NodeKind.Block &&
         !this.ignoredLines.has(falseLine)
       ) {
         const replacer = new RangeTransform(ifFalse);
