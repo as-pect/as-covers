@@ -10,8 +10,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@as-covers/assembly": "^0.4.0",
-    "@as-covers/glue": "^0.4.0",
-    "@as-covers/transform": "^0.4.0"
+    "@as-covers/assembly": "^0.4.1",
+    "@as-covers/glue": "^0.4.1",
+    "@as-covers/transform": "^0.4.1"
   }
 }

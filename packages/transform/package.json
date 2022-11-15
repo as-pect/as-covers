@@ -15,8 +15,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/line-column": "^1.0.0",
-    "typescript": "^4.8.4",
-    "assemblyscript": "^0.24.0"
+    "assemblyscript": "^0.24.0",
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "line-column": "^1.0.2",
