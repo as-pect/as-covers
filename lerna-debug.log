@@ -1,0 +1,15 @@
+48 error Error: Command failed with exit code 1: git add -- packages/glue/package.json packages/transform/package.json packages/transform/package-lock.json packages/core/package.json lerna.json package-lock.json
+48 error warning: in the working copy of 'lerna.json', LF will be replaced by CRLF the next time Git touches it
+48 error warning: in the working copy of 'packages/core/package.json', LF will be replaced by CRLF the next time Git touches it
+48 error warning: in the working copy of 'packages/glue/package.json', LF will be replaced by CRLF the next time Git touches it
+48 error warning: in the working copy of 'packages/transform/package.json', LF will be replaced by CRLF the next time Git touches it
+48 error The following paths are ignored by one of your .gitignore files:
+48 error package-lock.json
+48 error packages/transform/package-lock.json
+48 error hint: Use -f if you really want to add them.
+48 error hint: Turn this message off by running
+48 error hint: "git config advice.addIgnoredFile false"
+48 error     at makeError (C:\Users\tenne\Desktop\Project\as-covers\node_modules\execa\lib\error.js:60:11)
+48 error     at handlePromise (C:\Users\tenne\Desktop\Project\as-covers\node_modules\execa\index.js:118:26)
+48 error     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+48 error     at async Promise.all (index 0)
