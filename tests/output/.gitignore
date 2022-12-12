@@ -2,4 +2,3 @@ output.d.ts
 output.js
 output.wasm
 output.wat
-coverReportSnapshot.json
