@@ -248,7 +248,9 @@ class CoverTransform extends BaseVisitor {
 
         // Handle arrow functions
         if (!(dec.body instanceof BlockStatement)) {
+          if (dec.body === null) throw new Error("wtf");
           if (!(dec.body instanceof ExpressionStatement)) {
+            console.log(BlockStatement, dec.body.kind, dec.body.constructor, dec.body.constructor.toString());
             throw new TypeError("Expected function declaration body to be a block or expression");
           }
 
