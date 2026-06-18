@@ -16,7 +16,9 @@
 import {
   BinaryExpression,
   BlockStatement,
+  DoStatement,
   ExpressionStatement,
+  ForStatement,
   FunctionDeclaration,
   IfStatement,
   MethodDeclaration,
@@ -25,9 +27,11 @@ import {
   Node,
   Parser,
   Source,
+  Statement,
   SwitchCase,
   TernaryExpression,
   Token,
+  WhileStatement,
 } from "assemblyscript/dist/assemblyscript.js";
 
 import { Transform } from "assemblyscript/dist/transform.js";
@@ -212,6 +216,38 @@ class CoverTransform extends BaseVisitor {
       // Call super.
       super.visitIfStatement(stmt);
     }
+  }
+
+  visitForStatement(stmt: ForStatement): void {
+    super.visitForStatement(stmt);
+    const bodyBlock = this.coverLoopBody(stmt.body);
+    if (bodyBlock) stmt.body = bodyBlock;
+  }
+
+  visitWhileStatement(stmt: WhileStatement): void {
+    super.visitWhileStatement(stmt);
+    const bodyBlock = this.coverLoopBody(stmt.body);
+    if (bodyBlock) stmt.body = bodyBlock;
+  }
+
+  visitDoStatement(stmt: DoStatement): void {
+    super.visitDoStatement(stmt);
+    const bodyBlock = this.coverLoopBody(stmt.body);
+    if (bodyBlock) stmt.body = bodyBlock;
+  }
+
+  private coverLoopBody(body: Statement): BlockStatement | null {
+    if (body.kind === NodeKind.Block) return null;
+
+    const bodyPoint = this.instrumentation.declarePoint(
+      body,
+      "CoverType.Block"
+    );
+    if (!bodyPoint) return null;
+
+    const coverStatement = this.instrumentation.coverBlock(bodyPoint, body);
+    coverStatement.statements.push(body);
+    return coverStatement;
   }
 
   /**

@@ -1,0 +1,27 @@
+{
+  "pointCount": 6,
+  "covered": [
+    "tests/fixtures/loop-single-line-bodies/index.ts:6:29",
+    "tests/fixtures/loop-single-line-bodies/index.ts:9:24",
+    "tests/fixtures/loop-single-line-bodies/index.ts:12:4",
+    "tests/fixtures/loop-single-line-bodies/index.ts:13:4"
+  ],
+  "uncovered": [
+    "tests/fixtures/loop-single-line-bodies/index.ts:7:29",
+    "tests/fixtures/loop-single-line-bodies/index.ts:10:24"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 4,
+      "uncovered": 2
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}
