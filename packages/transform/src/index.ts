@@ -208,8 +208,9 @@ class CoverTransform extends BaseVisitor {
         visitIfFalse = true;
       }
     }
-    // Stops it from transfoming twice
+    // Stops wrapped branches from transforming twice while still visiting the condition.
     if (visitIfTrue || visitIfFalse) {
+      this.visit(stmt.condition);
       if (visitIfTrue) this._visit(ifTrue);
       if (visitIfFalse) this._visit(ifFalse!);
     } else {

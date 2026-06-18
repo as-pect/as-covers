@@ -1,0 +1,25 @@
+{
+  "pointCount": 4,
+  "covered": [
+    "tests/fixtures/if-without-block-logical-condition/index.ts:4:20"
+  ],
+  "uncovered": [
+    "tests/fixtures/if-without-block-logical-condition/index.ts:3:14",
+    "tests/fixtures/if-without-block-logical-condition/index.ts:3:20",
+    "tests/fixtures/if-without-block-logical-condition/index.ts:4:13"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 1,
+      "uncovered": 3
+    }
+  }
+}
