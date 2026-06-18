@@ -7,7 +7,7 @@
       "types": {
         "block": "75%",
         "function": "62.5%",
-        "expression": true
+        "expression": "62.5%"
       }
     },
     "tests/test.ts:19:1": {
