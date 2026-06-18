@@ -21,7 +21,7 @@ export const enum CoverType {
 // @ts-ignore: external annotation
 @external("__asCovers", "coverDeclare")
 // External
-export declare function __coverDeclare(file: string, id: u32, line: i32, col: i32, coverType: CoverType): void;
+export declare function __coverDeclare(file: string, id: i32, line: i32, col: i32, coverType: CoverType): void;
 /**
  * Triggers on execution and tells Cover that (***) Executed.
  * @param id - Id hash
@@ -29,4 +29,4 @@ export declare function __coverDeclare(file: string, id: u32, line: i32, col: i3
 // @ts-ignore: external annotation
 @external("__asCovers", "cover")
 // External
-export declare function __cover(id: u32): void;
+export declare function __cover(id: i32): void;
