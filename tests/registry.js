@@ -110,6 +110,27 @@ assert.throws(
   /Covers\.registerLoader\(loader\) must be called before coverage declarations run\./
 );
 
+const coversWithBadStringLoader = new Covers();
+const badStringImports = coversWithBadStringLoader.installImports({});
+coversWithBadStringLoader.registerLoader({
+  exports: {
+    __getString() {
+      return undefined;
+    },
+  },
+});
+assert.throws(
+  () =>
+    badStringImports.__asCovers.coverDeclare(
+      0,
+      302,
+      1,
+      1,
+      CoverPointType.Block
+    ),
+  /Covers loader __getString\(filePtr\) must return a source file string\./
+);
+
 const covers = new Covers();
 const imports = covers.installImports({});
 imports.__asCovers.cover(303);

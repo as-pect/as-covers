@@ -157,8 +157,14 @@ export class Covers {
       );
     }
     const filePath = getString.call(this.loader.exports, filePtr);
+    if (typeof filePath !== "string") {
+      throw new Error(
+        "Covers loader __getString(filePtr) must return a source file string."
+      );
+    }
     // Ignore if it shouldn't be covered.
-    if (!mm.isMatch(filePath, this.options.files)) {
+    const filePatterns = this.options.files ?? ["**/*.*"];
+    if (!mm.isMatch(filePath, filePatterns)) {
       this.ignoredCoverPointIds.add(id);
       return;
     }
