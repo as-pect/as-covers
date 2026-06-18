@@ -87,9 +87,9 @@ export type CoverageRenderConfiguration = {
 };
 
 /**
- * Covers option interface
+ * Options for configuring coverage collection.
  */
-interface ICoversOptions {
+export interface CoversOptions {
   files?: Array<string>;
   strict?: boolean;
 }
@@ -100,11 +100,11 @@ interface ICoversOptions {
 export class Covers {
   private registry = new CoverPointRegistry();
   private ignoredCoverPointIds = new Set<number>();
-  public options: ICoversOptions;
+  public options: CoversOptions;
   // Its any because I can't find the type.
   private loader: any;
 
-  constructor(options: ICoversOptions = {}) {
+  constructor(options: CoversOptions = {}) {
     this.options = {
       files: ["**/*.*"],
       strict: false,
