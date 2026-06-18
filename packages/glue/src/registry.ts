@@ -66,9 +66,19 @@ export class CoverPointRegistry {
     coverPoint.covered = true;
   }
 
-  public reset(): void {
+  public resetCoverage(): void {
+    for (const coverPoint of this.coverPoints.values()) {
+      coverPoint.covered = false;
+    }
+  }
+
+  public clearDeclarations(): void {
     this.coverPoints.clear();
     this.diagnosticList = [];
+  }
+
+  public reset(): void {
+    this.clearDeclarations();
   }
 
   public diagnostics(): CoverPointDiagnostic[] {

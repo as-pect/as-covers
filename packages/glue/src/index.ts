@@ -167,13 +167,24 @@ export class Covers {
   }
 
   /**
-   * Clears all coverPoints.
-   * Useful if user wants to clear everything.
-   * Will result in an error if anything is executed afterwards.
+   * Clears execution state while preserving declared cover points.
+   */
+  public resetCoverage(): void {
+    this.registry.resetCoverage();
+  }
+
+  /**
+   * Clears declared cover points and diagnostics.
+   */
+  public clearDeclarations(): void {
+    this.registry.clearDeclarations();
+  }
+
+  /**
+   * Backward-compatible alias for clearing declared cover points.
    */
   public reset(): void {
-    // Clear (Very very unsafe!)
-    this.registry.reset();
+    this.clearDeclarations();
   }
 
   public diagnostics(): CoverPointDiagnostic[] {

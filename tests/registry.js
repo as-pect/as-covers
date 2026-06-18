@@ -20,6 +20,10 @@ assert.deepEqual(registry.diagnostics(), []);
 
 registry.cover(101);
 assert.equal(firstPoint.covered, true);
+registry.resetCoverage();
+assert.equal(firstPoint.covered, false);
+registry.cover(101);
+assert.equal(firstPoint.covered, true);
 
 const exactDuplicatePoint = new CoverPoint(
   "src/first.ts",
@@ -62,7 +66,7 @@ assert.deepEqual(registry.diagnostics(), [
   },
 ]);
 
-registry.reset();
+registry.clearDeclarations();
 assert.equal(registry.size, 0);
 assert.deepEqual(registry.diagnostics(), []);
 
@@ -100,5 +104,30 @@ assert.throws(
   /Unknown cover point id 404 was executed before declaration\./
 );
 assert.equal(strictCovers.diagnostics()[0].id, 404);
+
+const resetCovers = new Covers();
+const resetImports = resetCovers.installImports({});
+resetCovers.registerLoader({
+  exports: {
+    __getString() {
+      return "src/reset.ts";
+    },
+  },
+});
+resetImports.__asCovers.coverDeclare(0, 505, 1, 1, CoverPointType.Block);
+resetImports.__asCovers.cover(505);
+assert.equal(resetCovers.createReport().get("total").coveredPointsNumber, 1);
+
+resetCovers.resetCoverage();
+assert.equal(resetCovers.createReport().get("total").coveredPointsNumber, 0);
+assert.equal(resetCovers.createReport().get("total").uncoveredPointsNumber, 1);
+
+resetCovers.clearDeclarations();
+assert.equal(resetCovers.createReport().get("total").coverPoints.length, 0);
+
+resetImports.__asCovers.coverDeclare(0, 506, 1, 1, CoverPointType.Block);
+assert.equal(resetCovers.createReport().get("total").coverPoints.length, 1);
+resetCovers.reset();
+assert.equal(resetCovers.createReport().get("total").coverPoints.length, 0);
 
 console.log("Cover point registry tests passed.");

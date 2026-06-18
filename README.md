@@ -56,6 +56,8 @@ fs.writeFileSync("./build/coverage.html", covers.toHTML());
 
 Use `covers.diagnostics()` to inspect non-fatal registry issues such as id collisions or `cover(id)` calls that ran before a declaration. Pass `new Covers({ strict: true })` to throw on unknown `cover(id)` events instead of recording only a diagnostic.
 
+Use `covers.resetCoverage()` between repeated runs when you want to keep declarations and clear only hit state. `covers.clearDeclarations()` clears declarations and diagnostics; `covers.reset()` remains a backward-compatible alias for clearing declarations.
+
 The repository package smoke test packs the packages, installs them into a throwaway consumer, compiles `tests/test.ts` with these package paths, and runs this loader flow:
 
 ```sh
