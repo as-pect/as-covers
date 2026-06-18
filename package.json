@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "test": "run-s build:src build:test run:test",
+    "test:package": "node tests/package-smoke.js",
     "test:update-snapshots": "run-s build:src build:test run:test-update-snapshots",
+    "release:check": "run-s test test:package",
     "build:src": "npm run tsc --workspace @as-covers/glue && npm run tsc --workspace @as-covers/transform",
     "build:test": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/lib/index.js --textFile ./tests/output/output.wat --outFile ./tests/output/output.wasm --exportStart _start",
     "run:test": "node --enable-source-maps tests/test",
