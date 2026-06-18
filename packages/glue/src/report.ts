@@ -88,7 +88,6 @@ const coveragePointKey = (
  */
 export class CoverPointReport {
   public coverPoints: CoverPoint[] = [];
-  private calculated: boolean = false;
   private total: number = 0;
   private totalCovered: number = 0;
   private expressionTotal: number = 0;
@@ -101,12 +100,17 @@ export class CoverPointReport {
   private functionCovered: number = 0;
   public functionCoveredFinite: boolean = true;
 
-  /** Calculates the statistics. */
+  /** Calculates the statistics from current cover point state. */
   private calculateStats(): void {
-    if (this.calculated) {
-      // If already calculated, don't do it again.
-      return;
-    }
+    this.total = 0;
+    this.totalCovered = 0;
+    this.expressionTotal = 0;
+    this.expressionCovered = 0;
+    this.blockTotal = 0;
+    this.blockCovered = 0;
+    this.functionTotal = 0;
+    this.functionCovered = 0;
+
     for (const point of this.coverPoints) {
       const covered = point.covered ? 1 : 0;
       this.total++;
@@ -116,7 +120,7 @@ export class CoverPointReport {
         case CoverPointType.Expression: {
           // If its an expression, increment the total expression count.
           this.expressionTotal++;
-          // If the expression is covered, increment the exressionCovered variable.
+          // If the expression is covered, increment the expressionCovered variable.
           this.expressionCovered += covered;
           break;
         }
@@ -136,12 +140,11 @@ export class CoverPointReport {
         }
       }
     }
-    // Set calculated to true. Prevents you from re-calculating. (not needed)
-    this.calculated = true;
+
     // Just a few checks.
-    if (this.blockTotal === 0) this.blockCoveredFinite = false;
-    if (this.expressionTotal === 0) this.expressionCoveredFinite = false;
-    if (this.functionTotal === 0) this.functionCoveredFinite = false;
+    this.blockCoveredFinite = this.blockTotal !== 0;
+    this.expressionCoveredFinite = this.expressionTotal !== 0;
+    this.functionCoveredFinite = this.functionTotal !== 0;
   }
 
   /** Sets this.fileName to a string. */
