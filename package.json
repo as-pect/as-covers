@@ -8,13 +8,15 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "run-s build:src build:test run:test",
+    "test": "run-s build:src build:test run:test run:test-fixtures",
+    "test:fixtures": "run-s build:src run:test-fixtures",
     "test:package": "node tests/package-smoke.js",
     "test:update-snapshots": "run-s build:src build:test run:test-update-snapshots",
     "release:check": "run-s test test:package",
     "build:src": "npm run tsc --workspace @as-covers/glue && npm run tsc --workspace @as-covers/transform",
     "build:test": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/lib/index.js --textFile ./tests/output/output.wat --outFile ./tests/output/output.wasm --exportStart _start",
     "run:test": "node --enable-source-maps tests/test",
+    "run:test-fixtures": "node --enable-source-maps tests/coverage-fixtures.js",
     "run:test-update-snapshots": "node --enable-source-maps tests/test --create"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",

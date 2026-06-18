@@ -1,0 +1,21 @@
+{
+  "pointCount": 1,
+  "covered": [
+    "tests/fixtures/block/index.ts:2:1"
+  ],
+  "uncovered": [],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 1,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

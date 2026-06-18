@@ -2,4 +2,5 @@ output.d.ts
 output.js
 output.wasm
 output.wat
+fixtures/
 package-smoke/
