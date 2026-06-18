@@ -38,6 +38,31 @@ function createSampleCovers() {
   return covers;
 }
 
+function createCsvCovers() {
+  const filePointers = new Map([[1, "src/a,\"b\"\n.ts"]]);
+  const covers = new Covers();
+  const imports = covers.installImports({});
+  covers.registerLoader({
+    exports: {
+      __getString(pointer) {
+        return filePointers.get(pointer);
+      },
+    },
+  });
+
+  imports.__asCovers.coverDeclare(
+    1,
+    401,
+    5,
+    6,
+    CoverPointType.Expression
+  );
+  imports.__asCovers.coverDeclare(1, 402, 7, 8, CoverPointType.Block);
+  imports.__asCovers.cover(401);
+
+  return covers;
+}
+
 const covers = createSampleCovers();
 const jsonReport = covers.toJSON();
 
@@ -55,5 +80,12 @@ assert.equal(jsonReport.total, undefined);
 
 const yamlReport = yaml.parse(covers.toYAML());
 assert.deepEqual(yamlReport, jsonReport);
+
+assert.equal(
+  createCsvCovers().toCSV(),
+  'File,Covered,ID,Column,Line\n' +
+    '"src/a,""b""\n.ts",true,401,6,5\n' +
+    '"src/a,""b""\n.ts",false,402,8,7\n'
+);
 
 console.log("Report format tests passed.");

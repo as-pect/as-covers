@@ -61,6 +61,14 @@ const tableConfig = {
  */
 const linecolText = (point: CoverPoint) => `${point.line}:${point.col}`;
 
+const csvCell = (value: string): string => {
+  if (!/[",\n\r]/.test(value)) return value;
+  return `"${value.replace(/"/g, `""`)}"`;
+};
+
+const csvRow = (values: string[]): string =>
+  `${values.map(csvCell).join(",")}\n`;
+
 /**
  * TODO: later.
  */
@@ -226,24 +234,19 @@ export class Covers {
    * @returns String
    */
   public toCSV(): string {
-    let result = "File,Covered,ID,Column,Line\n";
+    let result = csvRow(["File", "Covered", "ID", "Column", "Line"]);
     const report = this.createReport();
-    for (const [_, reportEntry] of report.entries()) {
-      for (const coverPoint of reportEntry.coverPoints) {
-        let res = [];
-        // File and location
-        res.push(coverPoint.file);
-        // Add covered prop
-        res.push(coverPoint.covered ? "true" : "false");
-        // add id prop
-        res.push(coverPoint.id.toString());
-        // add col prop
-        res.push(coverPoint.col.toString());
-        // add line prop
-        res.push(coverPoint.line.toString());
+    for (const [file, reportEntry] of report.entries()) {
+      if (file === "total") continue;
 
-        // Push it all to result (CSV Format)
-        result += `${res.join(",")}\n`;
+      for (const coverPoint of reportEntry.coverPoints) {
+        result += csvRow([
+          coverPoint.file,
+          coverPoint.covered ? "true" : "false",
+          coverPoint.id.toString(),
+          coverPoint.col.toString(),
+          coverPoint.line.toString(),
+        ]);
       }
     }
     // Resolve CSV
