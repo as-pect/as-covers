@@ -1,0 +1,22 @@
+{
+  "pointCount": 2,
+  "covered": [
+    "tests/fixtures/import-export/helper.ts:1:1",
+    "tests/fixtures/import-export/helper.ts:1:38"
+  ],
+  "uncovered": [],
+  "typeBreakdown": {
+    "function": {
+      "covered": 1,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 1,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

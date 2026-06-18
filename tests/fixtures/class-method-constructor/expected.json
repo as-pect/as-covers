@@ -1,0 +1,27 @@
+{
+  "pointCount": 6,
+  "covered": [
+    "tests/fixtures/class-method-constructor/index.ts:5:3",
+    "tests/fixtures/class-method-constructor/index.ts:5:27",
+    "tests/fixtures/class-method-constructor/index.ts:9:3",
+    "tests/fixtures/class-method-constructor/index.ts:9:21"
+  ],
+  "uncovered": [
+    "tests/fixtures/class-method-constructor/index.ts:13:3",
+    "tests/fixtures/class-method-constructor/index.ts:13:18"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 2,
+      "uncovered": 1
+    },
+    "block": {
+      "covered": 2,
+      "uncovered": 1
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

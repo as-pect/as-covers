@@ -1,0 +1,23 @@
+{
+  "pointCount": 2,
+  "covered": [
+    "tests/fixtures/loop-while/index.ts:4:24"
+  ],
+  "uncovered": [
+    "tests/fixtures/loop-while/index.ts:8:24"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 1,
+      "uncovered": 1
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

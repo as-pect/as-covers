@@ -118,11 +118,43 @@ function readExpected(fixtureDir) {
   return JSON.parse(fs.readFileSync(expectedPath(fixtureDir), "utf8"));
 }
 
+function writeExpected(fixtureDir, actual) {
+  let expected = actual;
+  const filePath = expectedPath(fixtureDir);
+  if (fs.existsSync(filePath)) {
+    const existing = readExpected(fixtureDir);
+    if (existing.status === "pending") {
+      expected = { ...existing, current: actual };
+    }
+  }
+  fs.writeFileSync(filePath, formatJson(expected));
+}
+
 function formatJson(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
 function assertFixture(name, actual, expected) {
+  if (expected.status === "pending") {
+    const actualJson = formatJson(actual);
+    const desiredJson = formatJson(expected.expected);
+    const currentJson = formatJson(expected.current);
+
+    if (actualJson === desiredJson) {
+      throw new Error(
+        `Fixture ${name} now matches its desired behavior. Remove the pending marker and commit the enabled fixture.\n\nReason:\n${expected.reason}`
+      );
+    }
+
+    if (actualJson !== currentJson) {
+      throw new Error(
+        `Pending fixture ${name} changed from its documented current behavior.\n\nReason:\n${expected.reason}\n\nDocumented current behavior:\n${currentJson}\nActual:\n${actualJson}\nDesired behavior:\n${desiredJson}`
+      );
+    }
+
+    return { pending: true, reason: expected.reason };
+  }
+
   const actualJson = formatJson(actual);
   const expectedJson = formatJson(expected);
   if (actualJson !== expectedJson) {
@@ -130,11 +162,13 @@ function assertFixture(name, actual, expected) {
       `Fixture ${name} coverage summary changed.\n\nExpected:\n${expectedJson}\nActual:\n${actualJson}`
     );
   }
+  return { pending: false, reason: "" };
 }
 
 const fixtureNames = fixtureNamesFromArgs();
 const updateExpected = process.argv.includes("--update");
 let passed = 0;
+let pending = 0;
 for (const name of fixtureNames) {
   const fixtureDir = path.join(fixtureRoot, name);
   const outputDir = path.join(outputRoot, name);
@@ -142,11 +176,16 @@ for (const name of fixtureNames) {
   const actual = summarize(runFixture(wasmPath));
 
   if (updateExpected) {
-    fs.writeFileSync(expectedPath(fixtureDir), formatJson(actual));
+    writeExpected(fixtureDir, actual);
     console.log(`↻ ${name}`);
   } else {
-    assertFixture(name, actual, readExpected(fixtureDir));
-    console.log(`✓ ${name}`);
+    const result = assertFixture(name, actual, readExpected(fixtureDir));
+    if (result.pending) {
+      pending++;
+      console.log(`○ ${name} pending: ${result.reason}`);
+    } else {
+      console.log(`✓ ${name}`);
+    }
   }
   passed++;
 }
@@ -154,5 +193,7 @@ for (const name of fixtureNames) {
 console.log(
   updateExpected
     ? `Coverage fixture snapshots updated: ${passed}`
-    : `Coverage fixtures passed: ${passed}`
+    : `Coverage fixtures passed: ${passed}${
+        pending > 0 ? ` (${pending} pending known bugs)` : ""
+      }`
 );

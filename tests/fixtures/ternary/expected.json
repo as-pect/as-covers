@@ -1,0 +1,25 @@
+{
+  "pointCount": 4,
+  "covered": [
+    "tests/fixtures/ternary/index.ts:2:22",
+    "tests/fixtures/ternary/index.ts:3:28"
+  ],
+  "uncovered": [
+    "tests/fixtures/ternary/index.ts:2:26",
+    "tests/fixtures/ternary/index.ts:3:24"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 2,
+      "uncovered": 2
+    }
+  }
+}
