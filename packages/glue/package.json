@@ -8,7 +8,7 @@
   "scripts": {
     "prepack": "npm run tsc",
     "tsc": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run tsc"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "contributors": [

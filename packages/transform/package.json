@@ -8,7 +8,7 @@
   "scripts": {
     "prepack": "npm run tsc",
     "tsc": "tsc",
-    "test": "node test/index.js"
+    "test": "npm run tsc"
   },
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "contributors": [
