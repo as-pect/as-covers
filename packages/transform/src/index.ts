@@ -17,19 +17,15 @@ import {
   ArrowKind,
   BinaryExpression,
   BlockStatement,
-  CommaExpression,
   ExpressionStatement,
   FunctionDeclaration,
   IfStatement,
   MethodDeclaration,
   NodeKind,
   ParameterNode,
-  ParenthesizedExpression,
   Node,
   Parser,
-  ReturnStatement,
   Source,
-  Statement,
   SwitchCase,
   TernaryExpression,
   Token,
@@ -37,72 +33,35 @@ import {
 
 import { Transform } from "assemblyscript/dist/transform.js";
 
-import { createPointID } from "./util.js";
+import { BaseVisitor } from "visitor-as";
 
-import { SimpleParser, BaseVisitor } from "visitor-as";
+import { SourceInstrumentation } from "./instrumentation.js";
 
-import { RangeTransform } from "visitor-as/dist/transformRange.js";
-
-import linecol from "line-column";
-
-// Ignored Regex
-const ignoredRegex = /^[\t ]*\/\/ @as-covers: ignore.*$/gm;
 // -- Imports
 class CoverTransform extends BaseVisitor {
-  private linecol: any = 0;
-  private globalStatements: Statement[] = [];
-  private ignoredLines = new Set<number>();
+  private instrumentation!: SourceInstrumentation;
   public entry: Source | null = null;
 
   // Declare properties.
   visitBinaryExpression(expr: BinaryExpression): void {
     super.visitBinaryExpression(expr);
-    const name = expr.range.source.normalizedPath;
-    // Switch/case (&& or ||)
+
     switch (expr.operator) {
       case Token.Bar_Bar:
       case Token.Ampersand_Ampersand: {
-        // If (&& or ||)
-        // Get right expression (right side of the || or &&)
         const rightExpression = expr.right;
-        // Coordinates
-        // Grab and parse line column
-        const rightLc = this.linecol.fromIndex(rightExpression.range.start);
-        // Turn coordinates into variables
-        const rightLine = rightLc.line;
-        const rightCol = rightLc.col;
-        // Stop if there is a `@as-covers: ignore` comment
-        if (this.ignoredLines.has(rightLine)) return;
-        const replacer = new RangeTransform(expr);
-        // Create id. (Hash)
-        const rightId = createPointID(
-          name,
-          rightLine,
-          rightCol,
-          "CoverType.Expression"
+        const rightPoint = this.instrumentation.declarePoint(
+          rightExpression,
+          "CoverType.Expression",
+          expr
         );
-        // Create Declare Statement.
-        const rightDeclareStatement = SimpleParser.parseStatement(
-          `__coverDeclare("${name}", ${rightId}, ${rightLine}, ${rightCol}, CoverType.Expression)`,
-          true
+        if (!rightPoint) return;
+
+        expr.right = this.instrumentation.coverExpression(
+          rightPoint,
+          rightExpression,
+          expr
         );
-        replacer.visit(rightDeclareStatement);
-
-        // Create new Expression
-        let rightCoverExpression = SimpleParser.parseExpression(
-          `(__cover(${rightId}), $$REPLACE_ME)`
-        ) as ParenthesizedExpression;
-        replacer.visit(rightCoverExpression);
-
-        // Replace $$REPLACE_ME with the expresion
-        (rightCoverExpression.expression as CommaExpression).expressions[1] =
-          rightExpression;
-        // Set expression.
-        expr.right = rightCoverExpression;
-
-        // Push Declare Statement to global statements.
-        this.globalStatements.push(rightDeclareStatement);
-
         break;
       }
     }
@@ -112,72 +71,39 @@ class CoverTransform extends BaseVisitor {
   visitMethodDeclaration(dec: MethodDeclaration): void {
     super.visitMethodDeclaration(dec);
     if (dec.body) {
-      const name = dec.range.source.normalizedPath;
-      const funcLc = this.linecol.fromIndex(dec.range.start);
-      const funcLine = funcLc.line;
-      const funcCol = funcLc.col;
-      if (this.ignoredLines.has(funcLine)) return;
-      const funcId = createPointID(
-        name,
-        funcLine,
-        funcCol,
+      const funcPoint = this.instrumentation.declarePoint(
+        dec,
         "CoverType.Function"
       );
-      const replacer = new RangeTransform(dec);
-      const funcDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
+      if (!funcPoint) return;
+
+      const funcCoverStatement = this.instrumentation.coverStatement(
+        funcPoint,
+        dec,
         true
       );
-      replacer.visit(funcDeclareStatement);
-
-      // The cover statement
-      const funcCoverStatement = SimpleParser.parseStatement(
-        `__cover(${funcId})`,
-        true
-      );
-      replacer.visit(funcCoverStatement);
-
       const bodyBlock = dec.body as BlockStatement;
       bodyBlock.statements.unshift(funcCoverStatement);
-
-      this.globalStatements.push(funcDeclareStatement);
     }
   }
 
   visitParameter(node: ParameterNode): void {
-    const name = node.range.source.normalizedPath;
-
     super.visitParameter(node);
 
     const initializer = node.initializer;
     if (initializer) {
-      const parmLc = this.linecol.fromIndex(initializer.range.start);
-      const parmLine = parmLc.line;
-      const parmCol = parmLc.col;
-      if (this.ignoredLines.has(parmLine)) return;
-      const replacer = new RangeTransform(node);
-      const parmId = createPointID(
-        name,
-        parmLine,
-        parmCol,
-        "CoverType.Expression"
+      const parmPoint = this.instrumentation.declarePoint(
+        initializer,
+        "CoverType.Expression",
+        node
       );
+      if (!parmPoint) return;
 
-      const parmDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${parmId}, ${parmLine}, ${parmCol}, CoverType.Expression)`,
-        true
+      node.initializer = this.instrumentation.coverExpression(
+        parmPoint,
+        initializer,
+        node
       );
-      replacer.visit(parmDeclareStatement);
-
-      const parmCoverExpression = SimpleParser.parseExpression(
-        `(__cover(${parmId}), $$REPLACE_ME)`
-      ) as ParenthesizedExpression;
-      replacer.visit(parmCoverExpression);
-      (parmCoverExpression.expression as CommaExpression).expressions[1] =
-        initializer;
-      node.initializer = parmCoverExpression;
-
-      this.globalStatements.push(parmDeclareStatement);
     }
   }
 
@@ -192,75 +118,43 @@ class CoverTransform extends BaseVisitor {
     super.visitFunctionDeclaration(dec);
     // If there is a function body... (Not empty)
     if (dec.body) {
-      // Grab the metadata
-      const name = dec.range.source.normalizedPath;
-      const funcLc = this.linecol.fromIndex(dec.range.start);
-      const funcLine = funcLc.line;
-      const funcCol = funcLc.col;
-
-      // check ignored lines
-      if (this.ignoredLines.has(funcLine)) return;
-      const replacer = new RangeTransform(dec);
-
-      // Generate id hash from information
-      const funcId = createPointID(
-        name,
-        funcLine,
-        funcCol,
+      const funcPoint = this.instrumentation.declarePoint(
+        dec,
         "CoverType.Function"
       );
-      // Create declare statement
-      const funcDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${funcId}, ${funcLine}, ${funcCol}, CoverType.Function)`,
-        true
-      );
-      replacer.visit(funcDeclareStatement);
-
-      // Push declare stastement to globalStatements
-      this.globalStatements.push(funcDeclareStatement);
+      if (!funcPoint) return;
 
       // If the body is an expression, convert it to a block. (We need it to be a block because of multiple lines.)
       if (dec.body.kind === NodeKind.Export) {
-        // Parse string as BlockStatement. (We replace the function's body with this.)
-        const bodyStatement = SimpleParser.parseStatement(`
-        {
-          __cover(${funcId});
-          return $$REPLACE_ME;
-        }`) as BlockStatement;
-        replacer.visit(bodyStatement);
-
-        // Grab the return statement of the body
-        const bodyReturn = bodyStatement.statements[1] as ReturnStatement;
-        // Grab the body and cast it as an ExpressionStatement
         const body = dec.body as ExpressionStatement;
         // Manipulate the arrowKind. Make sure it works.
         dec.arrowKind = ArrowKind.Single;
-        // Set the return value as the origianal body.
-        bodyReturn.value = body.expression;
-
-        // Finally, replace the function body with our generated block-statement body.
-        dec.body = body;
-      } else {
-        // If it isn't an expression (already a block.)
-        // Create a cover statement and add it to the top of the function body.
-        const funcCoverStatement = SimpleParser.parseStatement(
-          `__cover(${funcId})`,
-          true
+        dec.body = this.instrumentation.coverReturnBlock(
+          funcPoint,
+          body.expression,
+          dec
         );
-        replacer.visit(funcCoverStatement);
-
+      } else {
         // Handle arrow functions
         if (!(dec.body instanceof BlockStatement)) {
           if (!(dec.body instanceof ExpressionStatement)) {
-            throw new TypeError("Expected function declaration body to be a block or expression");
+            throw new TypeError(
+              "Expected function declaration body to be a block or expression"
+            );
           }
 
           const expr = (dec.body as ExpressionStatement).expression;
-          dec.body = Node.createBlockStatement([
-            Node.createReturnStatement(expr, expr.range)
-          ], expr.range);
+          dec.body = Node.createBlockStatement(
+            [Node.createReturnStatement(expr, expr.range)],
+            expr.range
+          );
         }
 
+        const funcCoverStatement = this.instrumentation.coverStatement(
+          funcPoint,
+          dec,
+          true
+        );
         const bodyBlock = dec.body as BlockStatement;
         // Push the cover statement to the top of the function body.
         bodyBlock.statements.unshift(funcCoverStatement);
@@ -280,85 +174,44 @@ class CoverTransform extends BaseVisitor {
     // Grab the stmt.ifTrue/False and make it into a variable.
     const ifTrue = stmt.ifTrue;
     const ifFalse = stmt.ifFalse;
-    // Grab the name of the current file
-    const name = stmt.range.source.normalizedPath;
-    // Coordinates
-    const trueLc = this.linecol.fromIndex(ifTrue.range.start);
-    const trueLine = trueLc.line;
-    const trueCol = trueLc.col;
 
     // If its not a block, convert it to a Block kind.
-    if (ifTrue.kind !== NodeKind.Block && !this.ignoredLines.has(trueLine)) {
-      const replacer = new RangeTransform(ifTrue);
-      // Get id from hash
-      const ifTrueId = createPointID(
-        name,
-        trueLine,
-        trueCol,
+    if (ifTrue.kind !== NodeKind.Block) {
+      const ifTruePoint = this.instrumentation.declarePoint(
+        ifTrue,
         "CoverType.Expression"
       );
-      // Cover Declare statment
-      const coverDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${ifTrueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
-        true
-      );
-      replacer.visit(coverDeclareStatement);
+      if (ifTruePoint) {
+        const coverStatement = this.instrumentation.coverBlock(
+          ifTruePoint,
+          ifTrue
+        );
+        // This pushes the old value right below the __cover(id)
+        coverStatement.statements.push(ifTrue);
+        // Set coverStatement as the if statement's body
+        stmt.ifTrue = coverStatement;
 
-      // Create new cover statement as a block.
-      const coverStatement = SimpleParser.parseStatement(
-        `{__cover(${ifTrueId})};`,
-        true
-      ) as BlockStatement;
-      replacer.visit(coverStatement);
-      // This pushes the old value right below the __cover(id)
-      coverStatement.statements.push(ifTrue);
-      // Set coverStatement as the if statement's body
-      stmt.ifTrue = coverStatement;
-
-      // Push coverDeclare to globalStatements
-      this.globalStatements.push(coverDeclareStatement);
-      // Set variables. This was because this transform was executing twice. These prevent that.
-      visitIfTrue = true;
-      visitIfFalse = !!ifFalse;
+        // Set variables. This was because this transform was executing twice. These prevent that.
+        visitIfTrue = true;
+        visitIfFalse = !!ifFalse;
+      }
     }
     // Handles false if statements
-    if (ifFalse) {
-      // Calculate coordinates
-      const falseLc = this.linecol.fromIndex(ifFalse.range.start);
-      const falseLine = falseLc.line;
-      const falseCol = falseLc.col;
-      if (
-        ifFalse.kind !== NodeKind.Block &&
-        !this.ignoredLines.has(falseLine)
-      ) {
-        const replacer = new RangeTransform(ifFalse);
-        // Create id from hash
-        const ifFalseId = createPointID(
-          name,
-          falseLine,
-          falseCol,
-          "CoverType.Expression"
+    if (ifFalse && ifFalse.kind !== NodeKind.Block) {
+      const ifFalsePoint = this.instrumentation.declarePoint(
+        ifFalse,
+        "CoverType.Expression"
+      );
+      if (ifFalsePoint) {
+        const coverStatement = this.instrumentation.coverBlock(
+          ifFalsePoint,
+          ifFalse
         );
-        // Create coverDeclare statement
-        const coverDeclareStatement = SimpleParser.parseStatement(
-          `__coverDeclare("${name}", ${ifFalseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
-          true
-        );
-        replacer.visit(coverDeclareStatement);
-
-        // Create new cover statement as a block.
-        const coverStatement = SimpleParser.parseStatement(
-          `{__cover(${ifFalseId})};`,
-          true
-        ) as BlockStatement;
-        replacer.visit(coverStatement);
-
         // Add old body right after __cover(id)
         coverStatement.statements.push(ifFalse);
         // Set the body to the coverStatement
         stmt.ifFalse = coverStatement;
-        // Push to globalStatements
-        this.globalStatements.push(coverDeclareStatement);
+
         // Double-check prevention
         visitIfTrue = true;
         visitIfFalse = true;
@@ -387,78 +240,31 @@ class CoverTransform extends BaseVisitor {
     // Cast the ifThen/Else into their own variables. (Prevents circularness)
     const trueExpression = expr.ifThen;
     const falseExpression = expr.ifElse;
-    // Get the file name
-    const name = expr.range.source.normalizedPath;
 
-    // Handle the true side. (left)
-    // Calculate coordinates
-    const trueLc = this.linecol.fromIndex(trueExpression.range.start);
-    const trueLine = trueLc.line;
-    const trueCol = trueLc.col;
-    if (!this.ignoredLines.has(trueLine)) {
-      const replacer = new RangeTransform(trueExpression);
-
-      // Create id from hash
-      const trueId = createPointID(
-        name,
-        trueLine,
-        trueCol,
-        "CoverType.Expression"
-      );
-      // Create declare statement
-      const trueDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${trueId}, ${trueLine}, ${trueCol}, CoverType.Expression)`,
-        true
-      );
-      replacer.visit(trueDeclareStatement);
-
-      // Create cover expression
-      let trueCoverExpression = SimpleParser.parseExpression(
-        `(__cover(${trueId}), $$REPLACE_ME)`
-      ) as ParenthesizedExpression;
-      replacer.visit(trueCoverExpression);
-      // Replace $$REPLACE_ME with the original value
-      (trueCoverExpression.expression as CommaExpression).expressions[1] =
-        trueExpression;
+    const truePoint = this.instrumentation.declarePoint(
+      trueExpression,
+      "CoverType.Expression"
+    );
+    if (truePoint) {
       // Set the left (true) side to the cover expression
-      expr.ifThen = trueCoverExpression;
-
-      this.globalStatements.push(trueDeclareStatement);
+      expr.ifThen = this.instrumentation.coverExpression(
+        truePoint,
+        trueExpression,
+        trueExpression
+      );
     }
-    // False
-    // Get false cordinates
-    const falseLc = this.linecol.fromIndex(falseExpression.range.start);
-    const falseLine = falseLc.line;
-    const falseCol = falseLc.col;
-    if (!this.ignoredLines.has(falseLine)) {
-      const replacer = new RangeTransform(falseExpression);
-      // Create id from hash
-      const falseId = createPointID(
-        name,
-        falseLine,
-        falseCol,
-        "CoverType.Expression"
-      );
-      // Create coverDeclare staterment
-      const falseDeclareStatement = SimpleParser.parseStatement(
-        `__coverDeclare("${name}", ${falseId}, ${falseLine}, ${falseCol}, CoverType.Expression)`,
-        true
-      );
-      replacer.visit(falseDeclareStatement);
 
-      // Create cover expression and cast a ParenthesizedExpression
-      const falseCoverExpression = SimpleParser.parseExpression(
-        `(__cover(${falseId}), $$REPLACE_ME)`
-      ) as ParenthesizedExpression;
-      replacer.visit(falseCoverExpression);
-
-      // Replace $$REPLACE_ME with the original value
-      (falseCoverExpression.expression as CommaExpression).expressions[1] =
-        falseExpression;
+    const falsePoint = this.instrumentation.declarePoint(
+      falseExpression,
+      "CoverType.Expression"
+    );
+    if (falsePoint) {
       // Set the false (right) side as the cover expression
-      expr.ifElse = falseCoverExpression;
-
-      this.globalStatements.push(falseDeclareStatement);
+      expr.ifElse = this.instrumentation.coverExpression(
+        falsePoint,
+        falseExpression,
+        falseExpression
+      );
     }
   }
   /**
@@ -467,32 +273,16 @@ class CoverTransform extends BaseVisitor {
    * @param stmt - SwitchCase
    */
   visitSwitchCase(stmt: SwitchCase): void {
-    // Get the current file name
-    const name = stmt.range.source.normalizedPath;
-    // Calculate coordinates
-    const caseLc = this.linecol.fromIndex(stmt.range.start);
-    const caseLine = caseLc.line;
-    const caseCol = caseLc.col;
-    if (this.ignoredLines.has(caseLine)) return;
-    const replacer = new RangeTransform(stmt);
-
-    // Create id from hash
-    const caseId = createPointID(name, caseLine, caseCol, "CoverType.Block");
-    // Create declare statement
-    const caseDeclareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${caseId}, ${caseLine}, ${caseCol}, CoverType.Block)`,
-      true
+    const casePoint = this.instrumentation.declarePoint(
+      stmt,
+      "CoverType.Block"
     );
-    replacer.visit(caseDeclareStatement);
+    if (!casePoint) return;
 
-    // Create a cover statement
-    const caseCoverStatement = SimpleParser.parseStatement(
-      `__cover(${caseId})`
+    const caseCoverStatement = this.instrumentation.coverStatement(
+      casePoint,
+      stmt
     );
-    replacer.visit(caseCoverStatement);
-
-    // Push declare to global
-    this.globalStatements.push(caseDeclareStatement);
     // Call super
     super.visitSwitchCase(stmt);
     // Push cover statement to the top of the case statement
@@ -504,38 +294,16 @@ class CoverTransform extends BaseVisitor {
    * @param node - BlockStatement
    */
   visitBlockStatement(node: BlockStatement) {
-    // Get the file name
-    const name = node.range.source.normalizedPath;
-    // Calculate coordinates
-    const blockLC = this.linecol.fromIndex(node.range.start);
-    const blockLine = blockLC.line;
-    const blockCol = blockLC.col;
-    if (this.ignoredLines.has(blockLine)) return;
-    const replacer = new RangeTransform(node);
-
-    // Create id from hash
-    const blockCoverId = createPointID(
-      name,
-      blockLine,
-      blockCol,
+    const blockPoint = this.instrumentation.declarePoint(
+      node,
       "CoverType.Block"
     );
+    if (!blockPoint) return;
 
-    // Create declare statement
-    const declareStatement = SimpleParser.parseStatement(
-      `__coverDeclare("${name}", ${blockCoverId}, ${blockLine}, ${blockCol}, CoverType.Block)`,
-      true
+    const coverStatement = this.instrumentation.coverStatement(
+      blockPoint,
+      node
     );
-    replacer.visit(declareStatement);
-
-    // Create cover statement
-    const coverStatement = SimpleParser.parseStatement(
-      `__cover(${blockCoverId})`
-    );
-    replacer.visit(coverStatement);
-
-    // Push declare to global
-    this.globalStatements.push(declareStatement);
     // Call to super
     super.visitBlockStatement(node);
     // Push cover statements to the top of the block.
@@ -544,29 +312,11 @@ class CoverTransform extends BaseVisitor {
 
   // VisitSource utility.
   visitSource(source: Source) {
-    // Grab the file text
-    const text: string = source.text;
-    // Create globalStatements array.
-    this.globalStatements = [];
-    // Create linecol function. (Base it off of the file text)
-    this.linecol = linecol(text);
-    // Track ignore comments per source so same-numbered lines in other files
-    // still get covered.
-    this.ignoredLines = new Set<number>();
-    // Find @as-covers: ignore comments (Regex)
-    const foundIgnores = text.matchAll(ignoredRegex);
-    // Loop over all the found results
-    for (const ignored of foundIgnores) {
-      // Calculate line coordinates from linecol
-      const line = this.linecol.fromIndex(ignored.index!).line + 1;
-      // Add it into the set.
-      this.ignoredLines.add(line);
-    }
+    this.instrumentation = new SourceInstrumentation(source);
     // Visit each source
     super.visitSource(source);
     // Push global statements to that source.
-    source.statements.unshift(...this.globalStatements);
-
+    this.instrumentation.prependDeclarations(source);
   }
 }
 
