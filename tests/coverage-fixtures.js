@@ -23,14 +23,31 @@ const emptyTypeBreakdown = () => ({
   expression: { covered: 0, uncovered: 0 },
 });
 
-function fixtureNamesFromArgs() {
-  const names = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
-  if (names.length > 0) return names;
+function availableFixtureNames() {
   return fs
     .readdirSync(fixtureRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
+}
+
+function fixtureNamesFromArgs() {
+  const names = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
+  const availableNames = availableFixtureNames();
+  if (names.length === 0) return availableNames;
+
+  const availableNameSet = new Set(availableNames);
+  const unknownNames = names.filter((name) => !availableNameSet.has(name));
+  if (unknownNames.length > 0) {
+    const availableFixtureList = availableNames
+      .map((name) => `  - ${name}`)
+      .join("\n");
+    throw new Error(
+      `Unknown coverage fixture${unknownNames.length === 1 ? "" : "s"}: ${unknownNames.join(", ")}\n\nAvailable fixtures:\n${availableFixtureList}`
+    );
+  }
+
+  return names;
 }
 
 function compileFixture(name, fixtureDir, outputDir) {
