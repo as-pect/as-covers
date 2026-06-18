@@ -2,103 +2,72 @@ import assert from "node:assert/strict";
 import yaml from "yaml";
 import { Covers, CoverPointType } from "../packages/glue/lib/index.js";
 
-function createSampleCovers() {
-  const filePointers = new Map([[1, "src/sample.ts"]]);
+function createCovers(file, points, coveredIds) {
   const covers = new Covers();
   const imports = covers.installImports({});
   covers.registerLoader({
     exports: {
-      __getString(pointer) {
-        return filePointers.get(pointer);
+      __getString() {
+        return file;
       },
     },
   });
 
-  imports.__asCovers.coverDeclare(
-    1,
-    101,
-    1,
-    1,
-    CoverPointType.Expression
-  );
-  imports.__asCovers.coverDeclare(
-    1,
-    102,
-    2,
-    1,
-    CoverPointType.Expression
-  );
-  imports.__asCovers.coverDeclare(1, 201, 3, 1, CoverPointType.Block);
-  imports.__asCovers.coverDeclare(1, 301, 4, 1, CoverPointType.Function);
+  for (const { id, line, col, type } of points) {
+    imports.__asCovers.coverDeclare(1, id, line, col, type);
+  }
 
-  imports.__asCovers.cover(101);
-  imports.__asCovers.cover(201);
-  imports.__asCovers.cover(301);
+  for (const id of coveredIds) {
+    imports.__asCovers.cover(id);
+  }
 
   return covers;
+}
+
+function createSampleCovers() {
+  return createCovers(
+    "src/sample.ts",
+    [
+      { id: 101, line: 1, col: 1, type: CoverPointType.Expression },
+      { id: 102, line: 2, col: 1, type: CoverPointType.Expression },
+      { id: 201, line: 3, col: 1, type: CoverPointType.Block },
+      { id: 301, line: 4, col: 1, type: CoverPointType.Function },
+    ],
+    [101, 201, 301]
+  );
 }
 
 function createHtmlCovers() {
-  const filePointers = new Map([[1, 'src/<sample>&"report".ts']]);
-  const covers = new Covers();
-  const imports = covers.installImports({});
-  covers.registerLoader({
-    exports: {
-      __getString(pointer) {
-        return filePointers.get(pointer);
-      },
-    },
-  });
-
-  imports.__asCovers.coverDeclare(1, 501, 1, 1, CoverPointType.Block);
-  imports.__asCovers.coverDeclare(1, 502, 2, 1, CoverPointType.Block);
-  imports.__asCovers.cover(501);
-
-  return covers;
+  return createCovers(
+    'src/<sample>&"report".ts',
+    [
+      { id: 501, line: 1, col: 1, type: CoverPointType.Block },
+      { id: 502, line: 2, col: 1, type: CoverPointType.Block },
+    ],
+    [501]
+  );
 }
 
 function createCsvCovers() {
-  const filePointers = new Map([[1, "src/a,\"b\"\n.ts"]]);
-  const covers = new Covers();
-  const imports = covers.installImports({});
-  covers.registerLoader({
-    exports: {
-      __getString(pointer) {
-        return filePointers.get(pointer);
-      },
-    },
-  });
-
-  imports.__asCovers.coverDeclare(
-    1,
-    401,
-    5,
-    6,
-    CoverPointType.Expression
+  return createCovers(
+    "src/a,\"b\"\n.ts",
+    [
+      { id: 401, line: 5, col: 6, type: CoverPointType.Expression },
+      { id: 402, line: 7, col: 8, type: CoverPointType.Block },
+    ],
+    [401]
   );
-  imports.__asCovers.coverDeclare(1, 402, 7, 8, CoverPointType.Block);
-  imports.__asCovers.cover(401);
-
-  return covers;
 }
 
 function createDuplicateLocationCovers() {
-  const filePointers = new Map([[1, "src/duplicate-location.ts"]]);
-  const covers = new Covers();
-  const imports = covers.installImports({});
-  covers.registerLoader({
-    exports: {
-      __getString(pointer) {
-        return filePointers.get(pointer);
-      },
-    },
-  });
-
-  imports.__asCovers.coverDeclare(1, 701, 3, 5, CoverPointType.Block);
-  imports.__asCovers.coverDeclare(1, 702, 3, 5, CoverPointType.Expression);
-  imports.__asCovers.cover(701);
-
-  return covers;
+  return createCovers(
+    "src/duplicate-location.ts",
+    [
+      { id: 701, line: 3, col: 5, type: CoverPointType.Block },
+      { id: 702, line: 3, col: 5, type: CoverPointType.Expression },
+    ],
+    [701]
+  );
 }
 
 function parseLCOV(output) {
