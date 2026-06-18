@@ -44,6 +44,7 @@ const collisionPoint = new CoverPoint(
   CoverPointType.Expression
 );
 assert.equal(registry.declare(collisionPoint), firstPoint);
+assert.equal(registry.declare(collisionPoint), firstPoint);
 assert.equal(registry.size, 1);
 assert.equal(Array.from(registry.values())[0], firstPoint);
 assert.deepEqual(registry.diagnostics(), [
@@ -70,6 +71,7 @@ registry.clearDeclarations();
 assert.equal(registry.size, 0);
 assert.deepEqual(registry.diagnostics(), []);
 
+registry.cover(101);
 registry.cover(101);
 assert.equal(registry.size, 0);
 assert.deepEqual(registry.diagnostics(), [

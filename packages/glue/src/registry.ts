@@ -38,7 +38,7 @@ export class CoverPointRegistry {
     }
 
     if (!this.isSamePoint(existingPoint, point)) {
-      this.diagnosticList.push({
+      this.recordDiagnostic({
         kind: "id-collision",
         id: point.id,
         existing: this.toDiagnosticLocation(existingPoint),
@@ -58,7 +58,7 @@ export class CoverPointRegistry {
         id,
         message: `Unknown cover point id ${id} was executed before declaration.`,
       };
-      this.diagnosticList.push(diagnostic);
+      this.recordDiagnostic(diagnostic);
       if (strict) throw new Error(diagnostic.message);
       return;
     }
@@ -94,6 +94,49 @@ export class CoverPointRegistry {
   }
 
   private isSamePoint(left: CoverPoint, right: CoverPoint): boolean {
+    return (
+      left.file === right.file &&
+      left.line === right.line &&
+      left.col === right.col &&
+      left.type === right.type
+    );
+  }
+
+  private recordDiagnostic(diagnostic: CoverPointDiagnostic): void {
+    if (
+      this.diagnosticList.some((existing) =>
+        this.isSameDiagnostic(existing, diagnostic)
+      )
+    ) {
+      return;
+    }
+
+    this.diagnosticList.push(diagnostic);
+  }
+
+  private isSameDiagnostic(
+    left: CoverPointDiagnostic,
+    right: CoverPointDiagnostic
+  ): boolean {
+    if (left.kind !== right.kind || left.id !== right.id) return false;
+    if (left.kind === "unknown-cover" && right.kind === "unknown-cover") {
+      return true;
+    }
+
+    if (left.kind === "id-collision" && right.kind === "id-collision") {
+      return (
+        this.isSameLocation(left.existing, right.existing) &&
+        this.isSameLocation(left.incoming, right.incoming)
+      );
+    }
+
+    return false;
+  }
+
+  private isSameLocation(
+    left: CoverPointDiagnosticLocation,
+    right: CoverPointDiagnosticLocation
+  ): boolean {
     return (
       left.file === right.file &&
       left.line === right.line &&
