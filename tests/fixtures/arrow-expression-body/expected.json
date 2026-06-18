@@ -1,0 +1,25 @@
+{
+  "pointCount": 4,
+  "covered": [
+    "tests/fixtures/arrow-expression-body/index.ts:2:1",
+    "tests/fixtures/arrow-expression-body/index.ts:2:23",
+    "tests/fixtures/arrow-expression-body/index.ts:4:17"
+  ],
+  "uncovered": [
+    "tests/fixtures/arrow-expression-body/index.ts:5:19"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 2,
+      "uncovered": 1
+    },
+    "block": {
+      "covered": 1,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

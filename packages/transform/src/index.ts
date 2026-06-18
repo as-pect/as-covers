@@ -14,7 +14,6 @@
 
 // Import visitor-as
 import {
-  ArrowKind,
   BinaryExpression,
   BlockStatement,
   ExpressionStatement,
@@ -124,41 +123,29 @@ class CoverTransform extends BaseVisitor {
       );
       if (!funcPoint) return;
 
-      // If the body is an expression, convert it to a block. (We need it to be a block because of multiple lines.)
-      if (dec.body.kind === NodeKind.Export) {
-        const body = dec.body as ExpressionStatement;
-        // Manipulate the arrowKind. Make sure it works.
-        dec.arrowKind = ArrowKind.Single;
-        dec.body = this.instrumentation.coverReturnBlock(
-          funcPoint,
-          body.expression,
-          dec
-        );
-      } else {
-        // Handle arrow functions
-        if (!(dec.body instanceof BlockStatement)) {
-          if (!(dec.body instanceof ExpressionStatement)) {
-            throw new TypeError(
-              "Expected function declaration body to be a block or expression"
-            );
-          }
-
-          const expr = (dec.body as ExpressionStatement).expression;
-          dec.body = Node.createBlockStatement(
-            [Node.createReturnStatement(expr, expr.range)],
-            expr.range
+      // Handle arrow expression bodies.
+      if (!(dec.body instanceof BlockStatement)) {
+        if (!(dec.body instanceof ExpressionStatement)) {
+          throw new TypeError(
+            "Expected function declaration body to be a block or expression"
           );
         }
 
-        const funcCoverStatement = this.instrumentation.coverStatement(
-          funcPoint,
-          dec,
-          true
+        const expr = (dec.body as ExpressionStatement).expression;
+        dec.body = Node.createBlockStatement(
+          [Node.createReturnStatement(expr, expr.range)],
+          expr.range
         );
-        const bodyBlock = dec.body as BlockStatement;
-        // Push the cover statement to the top of the function body.
-        bodyBlock.statements.unshift(funcCoverStatement);
       }
+
+      const funcCoverStatement = this.instrumentation.coverStatement(
+        funcPoint,
+        dec,
+        true
+      );
+      const bodyBlock = dec.body as BlockStatement;
+      // Push the cover statement to the top of the function body.
+      bodyBlock.statements.unshift(funcCoverStatement);
     }
   }
 

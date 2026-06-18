@@ -4,7 +4,6 @@ import {
   Expression,
   Node,
   ParenthesizedExpression,
-  ReturnStatement,
   Source,
   Statement,
 } from "assemblyscript/dist/assemblyscript.js";
@@ -74,21 +73,6 @@ export class SourceInstrumentation {
       anchor,
       true
     ) as BlockStatement;
-  }
-
-  coverReturnBlock(
-    point: CoverPointDetails,
-    originalExpression: Expression,
-    anchor: Node
-  ): BlockStatement {
-    const bodyStatement = this.parseStatement(`
-        {
-          __cover(${point.id});
-          return $$REPLACE_ME;
-        }`, anchor) as BlockStatement;
-    const bodyReturn = bodyStatement.statements[1] as ReturnStatement;
-    bodyReturn.value = originalExpression;
-    return bodyStatement;
   }
 
   coverExpression(
