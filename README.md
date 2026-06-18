@@ -1,76 +1,58 @@
 # AS-Covers
 
-Code coverage for AssemblyScript projects that uses a few simple packages to make visualizing how well your code branches are covered.
+Code coverage for AssemblyScript projects using a compiler transform, a tiny AssemblyScript helper module, and Node.js report glue.
 
-# Usage
+## Install
 
-First install from npm.
-
-```sh
-npm install @as-covers/core
-```
-
-`@as-covers/core` installs the AssemblyScript helper, transform, and glue packages, and re-exports the glue API for runtime usage.
-
-Next, add the following transform and entry point to your AssemblyScript compilation.
+For the standard setup, install the convenience package plus the AssemblyScript tools used by your test runner:
 
 ```sh
-# uses multiple lines for clarity
-asc node_modules/@as-covers/assembly/index.ts
-  --transform @as-covers/transform/lib/index.js
-  --explicitStart
+npm install --save-dev @as-covers/core assemblyscript @assemblyscript/loader
 ```
 
-These will inject some immutable cover points into your web assembly binary.
+`@as-covers/core` depends on `@as-covers/assembly`, `@as-covers/transform`, and `@as-covers/glue`, and re-exports the glue API.
 
-The next step is to instantiate the module:
+## Compile with coverage
+
+Add your normal AssemblyScript entry file, the as-covers helper declarations, and the transform to the `asc` command:
+
+```sh
+npx asc ./assembly/index.ts \
+  --lib ./node_modules/@as-covers/assembly/index.ts \
+  --transform ./node_modules/@as-covers/transform/lib/index.js \
+  --outFile ./build/coverage.wasm \
+  --exportStart _start
+```
+
+Replace `./assembly/index.ts` with your test entry file. The `--lib` path makes the injected `__cover` imports type-check, and the `--transform` path points at the packaged transform output.
+
+`Covers` reads declared source-file strings through the `@assemblyscript/loader` string helpers, so instantiate the instrumented wasm with `@assemblyscript/loader` or provide equivalent `exports.__getString` support in a custom loader.
+
+## Run and report
 
 ```ts
+import fs from "node:fs";
+import loader from "@assemblyscript/loader";
 import { Covers } from "@as-covers/core";
-import * as fs from "fs";
-import { instantiate } from "@assemblyscript/loader";
 
-// import your web assembly binary
-const binary = fs.readFileSync("build/untouched.wasm");
 const covers = new Covers();
-// Install your imports here
-const imports = covers.installImports({});
+const wasmModule = loader.instantiateSync(
+  fs.readFileSync("./build/coverage.wasm"),
+  covers.installImports({})
+);
 
-(async function() {
-  const loader = await instantiate(binary, imports);
-  covers.registerLoader(loader);
-  loader.exports._start();
-  process.stdout.write(covers.stringify());
-}());
+covers.registerLoader(wasmModule);
+wasmModule.exports._start();
 
+process.stdout.write(covers.stringify());
 ```
 
-Covers is designed to work over multiple binary compilations with the transform applied. Each cover point is immutably hashed so that you can test code coverage with different test files.
+The repository package smoke test packs the packages, installs them into a throwaway consumer, compiles `tests/test.ts` with these package paths, and runs this loader flow:
 
-Just remember to register the loader each time before calling the `_start()` method.
-
-# License
-
+```sh
+npm run test:package
 ```
-MIT License
 
-Copyright (c) 2021 Joshua Tenner <tenner.joshua@gmail.com>
+## License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+MIT. See [LICENSE](./LICENSE).

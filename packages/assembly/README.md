@@ -1,74 +1,39 @@
-# AS-Covers
+# AS-Covers assembly
 
-Code coverage for AssemblyScript projects that uses a few simple packages to make visualizing how well your code branches are covered.
+AssemblyScript helper declarations used by the as-covers transform. The transform injects calls to `__coverDeclare` and `__cover`; this package supplies the declarations that make those calls type-check during `asc` compilation.
 
-# Usage
+Most users can install `@as-covers/core` instead; it depends on this package. Install `@as-covers/assembly` directly when you manage the packages separately.
 
-First install from npm.
-
-```sh
-npm install @as-covers/core
-```
-
-Next, add the following transform and entry point to your AssemblyScript compilation.
+## Install
 
 ```sh
-# uses multiple lines for clarity
-asc node_modules/@as-covers/assembly/index.ts
-  --transform @as-covers/transform/lib/index.js
-  --explicitStart
+npm install --save-dev @as-covers/assembly @as-covers/transform assemblyscript
 ```
 
-These will inject some immutable cover points into your web assembly binary.
+## Compile with coverage
 
-The next step is to instantiate the module:
-
-```ts
-import { Covers } from "@as-covers/glue";
-import * as fs from "fs";
-import { instantiate } from "@assemblyscript/loader";
-
-// import your web assembly binary
-const binary = fs.readFileSync("build/untouched.wasm");
-const covers = new Covers();
-// Install your imports here
-const imports = covers.installImports({});
-
-(async function() {
-  const loader = await instantiate(binary, imports);
-  covers.registerLoader(loader);
-  loader.exports._start();
-  process.stdout.write(covers.stringify());
-}());
-
+```sh
+npx asc ./assembly/index.ts \
+  --lib ./node_modules/@as-covers/assembly/index.ts \
+  --transform ./node_modules/@as-covers/transform/lib/index.js \
+  --outFile ./build/coverage.wasm \
+  --exportStart _start
 ```
 
-Covers is designed to work over multiple binary compilations with the transform applied. Each cover point is immutably hashed so that you can test code coverage with different test files.
+Replace `./assembly/index.ts` with your test entry file. The `--lib` path is the important part from this package.
 
-Just remember to register the loader each time before calling the `_start()` method.
+## Run the instrumented wasm
 
-# License
+Use `@as-covers/glue` or the `@as-covers/core` re-export with `@assemblyscript/loader` so coverage declarations can read source-file strings through loader string helpers.
 
+## Verified package flow
+
+The repository package smoke test packs this package and compiles `tests/test.ts` against the packed tarball:
+
+```sh
+npm run test:package
 ```
-MIT License
 
-Copyright (c) 2021 Joshua Tenner <tenner.joshua@gmail.com>
+## License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+MIT. See [LICENSE](./LICENSE).

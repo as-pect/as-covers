@@ -1,76 +1,52 @@
-# AS-Covers
+# AS-Covers core
 
-Code coverage for AssemblyScript projects that uses a few simple packages to make visualizing how well your code branches are covered.
+Convenience package for AssemblyScript coverage. It installs the helper declarations, transform, and Node.js glue packages, and re-exports the glue API from `@as-covers/glue`.
 
-# Usage
-
-First install from npm.
+## Install
 
 ```sh
-npm install @as-covers/core
+npm install --save-dev @as-covers/core assemblyscript @assemblyscript/loader
 ```
 
-`@as-covers/core` installs the AssemblyScript helper, transform, and glue packages, and re-exports the glue API for runtime usage.
-
-Next, add the following transform and entry point to your AssemblyScript compilation.
+## Compile with coverage
 
 ```sh
-# uses multiple lines for clarity
-asc node_modules/@as-covers/assembly/index.ts
-  --transform @as-covers/transform/lib/index.js
-  --explicitStart
+npx asc ./assembly/index.ts \
+  --lib ./node_modules/@as-covers/assembly/index.ts \
+  --transform ./node_modules/@as-covers/transform/lib/index.js \
+  --outFile ./build/coverage.wasm \
+  --exportStart _start
 ```
 
-These will inject some immutable cover points into your web assembly binary.
+Replace `./assembly/index.ts` with your test entry file. The `--lib` path comes from `@as-covers/assembly`; the transform path comes from `@as-covers/transform`.
 
-The next step is to instantiate the module:
+`Covers` reads declared source-file strings through the `@assemblyscript/loader` string helpers, so instantiate with `@assemblyscript/loader` or provide equivalent `exports.__getString` support in a custom loader.
+
+## Run and report
 
 ```ts
+import fs from "node:fs";
+import loader from "@assemblyscript/loader";
 import { Covers } from "@as-covers/core";
-import * as fs from "fs";
-import { instantiate } from "@assemblyscript/loader";
 
-// import your web assembly binary
-const binary = fs.readFileSync("build/untouched.wasm");
 const covers = new Covers();
-// Install your imports here
-const imports = covers.installImports({});
+const wasmModule = loader.instantiateSync(
+  fs.readFileSync("./build/coverage.wasm"),
+  covers.installImports({})
+);
 
-(async function() {
-  const loader = await instantiate(binary, imports);
-  covers.registerLoader(loader);
-  loader.exports._start();
-  process.stdout.write(covers.stringify());
-}());
+covers.registerLoader(wasmModule);
+wasmModule.exports._start();
 
+process.stdout.write(covers.stringify());
 ```
 
-Covers is designed to work over multiple binary compilations with the transform applied. Each cover point is immutably hashed so that you can test code coverage with different test files.
+This repository verifies the packed-package flow with:
 
-Just remember to register the loader each time before calling the `_start()` method.
-
-# License
-
+```sh
+npm run test:package
 ```
-MIT License
 
-Copyright (c) 2021 Joshua Tenner <tenner.joshua@gmail.com>
+## License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+MIT. See [LICENSE](./LICENSE).
