@@ -105,6 +105,20 @@ assert.throws(
 );
 assert.equal(strictCovers.diagnostics()[0].id, 404);
 
+const filteredCovers = new Covers({ files: ["src/included.ts"], strict: true });
+const filteredImports = filteredCovers.installImports({});
+filteredCovers.registerLoader({
+  exports: {
+    __getString() {
+      return "src/excluded.ts";
+    },
+  },
+});
+filteredImports.__asCovers.coverDeclare(0, 405, 1, 1, CoverPointType.Block);
+assert.doesNotThrow(() => filteredImports.__asCovers.cover(405));
+assert.equal(filteredCovers.createReport().get("total").coverPoints.length, 0);
+assert.deepEqual(filteredCovers.diagnostics(), []);
+
 const resetCovers = new Covers();
 const resetImports = resetCovers.installImports({});
 resetCovers.registerLoader({

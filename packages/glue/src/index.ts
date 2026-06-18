@@ -99,6 +99,7 @@ interface ICoversOptions {
  */
 export class Covers {
   private registry = new CoverPointRegistry();
+  private ignoredCoverPointIds = new Set<number>();
   public options: ICoversOptions;
   // Its any because I can't find the type.
   private loader: any;
@@ -152,7 +153,11 @@ export class Covers {
     // Get filePath. Needs --exportRuntime flag.
     const filePath = this.loader!.exports.__getString(filePtr);
     // Ignore if it shouldn't be covered.
-    if (!mm.isMatch(filePath, this.options.files)) return;
+    if (!mm.isMatch(filePath, this.options.files)) {
+      this.ignoredCoverPointIds.add(id);
+      return;
+    }
+    this.ignoredCoverPointIds.delete(id);
     // Create new CoverPoint and add it to the registry.
     const coverPoint = new CoverPoint(filePath, line, col, id, coverType);
     this.registry.declare(coverPoint);
@@ -163,6 +168,7 @@ export class Covers {
    * @param id - The id of the point.
    */
   private cover(id: number): void {
+    if (this.ignoredCoverPointIds.has(id)) return;
     this.registry.cover(id, this.options.strict === true);
   }
 
@@ -178,6 +184,7 @@ export class Covers {
    */
   public clearDeclarations(): void {
     this.registry.clearDeclarations();
+    this.ignoredCoverPointIds.clear();
   }
 
   /**
