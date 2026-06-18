@@ -106,9 +106,8 @@ export class Covers {
 
   constructor(options: CoversOptions = {}) {
     this.options = {
-      files: ["**/*.*"],
-      strict: false,
-      ...options,
+      files: [...(options.files ?? ["**/*.*"])],
+      strict: options.strict === true,
     };
   }
 

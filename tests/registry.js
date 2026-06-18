@@ -129,6 +129,29 @@ assert.throws(
 );
 assert.equal(strictCovers.diagnostics()[0].id, 404);
 
+const defaultedFilesCovers = new Covers({ files: undefined });
+const defaultedFilesImports = defaultedFilesCovers.installImports({});
+defaultedFilesCovers.registerLoader({
+  exports: {
+    __getString() {
+      return "src/defaulted-files.ts";
+    },
+  },
+});
+assert.doesNotThrow(() =>
+  defaultedFilesImports.__asCovers.coverDeclare(
+    0,
+    406,
+    1,
+    1,
+    CoverPointType.Block
+  )
+);
+assert.equal(
+  defaultedFilesCovers.createReport().get("total").coverPoints.length,
+  1
+);
+
 const filteredCovers = new Covers({ files: ["src/included.ts"], strict: true });
 const filteredImports = filteredCovers.installImports({});
 filteredCovers.registerLoader({
