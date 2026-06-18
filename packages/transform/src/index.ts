@@ -300,14 +300,14 @@ class CoverTransform extends BaseVisitor {
       stmt,
       "CoverType.Block"
     );
-    if (!casePoint) return;
+    const caseCoverStatement = casePoint
+      ? this.instrumentation.coverStatement(casePoint, stmt)
+      : null;
 
-    const caseCoverStatement = this.instrumentation.coverStatement(
-      casePoint,
-      stmt
-    );
     // Call super
     super.visitSwitchCase(stmt);
+
+    if (!caseCoverStatement) return;
     // Push cover statement to the top of the case statement
     stmt.statements.unshift(caseCoverStatement);
   }
@@ -321,14 +321,14 @@ class CoverTransform extends BaseVisitor {
       node,
       "CoverType.Block"
     );
-    if (!blockPoint) return;
+    const coverStatement = blockPoint
+      ? this.instrumentation.coverStatement(blockPoint, node)
+      : null;
 
-    const coverStatement = this.instrumentation.coverStatement(
-      blockPoint,
-      node
-    );
     // Call to super
     super.visitBlockStatement(node);
+
+    if (!coverStatement) return;
     // Push cover statements to the top of the block.
     node.statements.unshift(coverStatement);
   }
