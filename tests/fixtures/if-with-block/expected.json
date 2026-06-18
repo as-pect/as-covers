@@ -1,0 +1,23 @@
+{
+  "pointCount": 2,
+  "covered": [
+    "tests/fixtures/if-with-block/index.ts:2:11"
+  ],
+  "uncovered": [
+    "tests/fixtures/if-with-block/index.ts:4:12"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 1,
+      "uncovered": 1
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

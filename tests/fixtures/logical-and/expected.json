@@ -1,0 +1,22 @@
+{
+  "pointCount": 2,
+  "covered": [
+    "tests/fixtures/logical-and/index.ts:2:9",
+    "tests/fixtures/logical-and/index.ts:4:9"
+  ],
+  "uncovered": [],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 2,
+      "uncovered": 0
+    }
+  }
+}

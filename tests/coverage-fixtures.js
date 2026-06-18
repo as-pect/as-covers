@@ -88,11 +88,9 @@ function summarize(covers) {
   }
 
   points.sort((left, right) => {
-    const leftLocation = toLocation(left);
-    const rightLocation = toLocation(right);
-    if (leftLocation !== rightLocation) {
-      return leftLocation.localeCompare(rightLocation);
-    }
+    if (left.file !== right.file) return left.file.localeCompare(right.file);
+    if (left.line !== right.line) return left.line - right.line;
+    if (left.col !== right.col) return left.col - right.col;
     return typeNames[left.type].localeCompare(typeNames[right.type]);
   });
 
@@ -112,10 +110,12 @@ function summarize(covers) {
   };
 }
 
+function expectedPath(fixtureDir) {
+  return path.join(fixtureDir, "expected.json");
+}
+
 function readExpected(fixtureDir) {
-  return JSON.parse(
-    fs.readFileSync(path.join(fixtureDir, "expected.json"), "utf8")
-  );
+  return JSON.parse(fs.readFileSync(expectedPath(fixtureDir), "utf8"));
 }
 
 function formatJson(value) {
@@ -133,15 +133,26 @@ function assertFixture(name, actual, expected) {
 }
 
 const fixtureNames = fixtureNamesFromArgs();
+const updateExpected = process.argv.includes("--update");
 let passed = 0;
 for (const name of fixtureNames) {
   const fixtureDir = path.join(fixtureRoot, name);
   const outputDir = path.join(outputRoot, name);
   const wasmPath = compileFixture(name, fixtureDir, outputDir);
   const actual = summarize(runFixture(wasmPath));
-  assertFixture(name, actual, readExpected(fixtureDir));
-  console.log(`✓ ${name}`);
+
+  if (updateExpected) {
+    fs.writeFileSync(expectedPath(fixtureDir), formatJson(actual));
+    console.log(`↻ ${name}`);
+  } else {
+    assertFixture(name, actual, readExpected(fixtureDir));
+    console.log(`✓ ${name}`);
+  }
   passed++;
 }
 
-console.log(`Coverage fixtures passed: ${passed}`);
+console.log(
+  updateExpected
+    ? `Coverage fixture snapshots updated: ${passed}`
+    : `Coverage fixtures passed: ${passed}`
+);

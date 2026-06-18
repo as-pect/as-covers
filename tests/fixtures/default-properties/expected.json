@@ -1,0 +1,24 @@
+{
+  "pointCount": 4,
+  "covered": [
+    "tests/fixtures/default-properties/index.ts:2:1",
+    "tests/fixtures/default-properties/index.ts:2:69",
+    "tests/fixtures/default-properties/index.ts:4:1",
+    "tests/fixtures/default-properties/index.ts:4:69"
+  ],
+  "uncovered": [],
+  "typeBreakdown": {
+    "function": {
+      "covered": 2,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 2,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

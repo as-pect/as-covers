@@ -1,0 +1,23 @@
+{
+  "pointCount": 3,
+  "covered": [
+    "tests/fixtures/switch-case/index.ts:2:15",
+    "tests/fixtures/switch-case/index.ts:3:14",
+    "tests/fixtures/switch-case/index.ts:5:15"
+  ],
+  "uncovered": [],
+  "typeBreakdown": {
+    "function": {
+      "covered": 0,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 3,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}

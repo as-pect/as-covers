@@ -1,0 +1,25 @@
+{
+  "pointCount": 4,
+  "covered": [
+    "tests/fixtures/arrow-functions/index.ts:2:20",
+    "tests/fixtures/arrow-functions/index.ts:2:32"
+  ],
+  "uncovered": [
+    "tests/fixtures/arrow-functions/index.ts:4:20",
+    "tests/fixtures/arrow-functions/index.ts:4:32"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 1,
+      "uncovered": 1
+    },
+    "block": {
+      "covered": 1,
+      "uncovered": 1
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
+    }
+  }
+}
