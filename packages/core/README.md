@@ -10,6 +10,8 @@ First install from npm.
 npm install @as-covers/core
 ```
 
+`@as-covers/core` installs the AssemblyScript helper, transform, and glue packages, and re-exports the glue API for runtime usage.
+
 Next, add the following transform and entry point to your AssemblyScript compilation.
 
 ```sh
@@ -24,7 +26,7 @@ These will inject some immutable cover points into your web assembly binary.
 The next step is to instantiate the module:
 
 ```ts
-import { Covers } from "@as-covers/glue";
+import { Covers } from "@as-covers/core";
 import * as fs from "fs";
 import { instantiate } from "@assemblyscript/loader";
 

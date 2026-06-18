@@ -3,6 +3,12 @@
   "version": "0.4.2",
   "description": "Core code coverage package for as-covers.",
   "main": "index.js",
+  "types": "index.d.ts",
+  "type": "module",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
   "scripts": {},
   "author": "Joshua Tenner <tenner.joshua@gmail.com>",
   "contributors": [
