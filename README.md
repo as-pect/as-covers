@@ -58,6 +58,8 @@ Use `covers.diagnostics()` to inspect non-fatal registry issues such as id colli
 
 Use `covers.resetCoverage()` between repeated runs when you want to keep declarations and clear only hit state. `covers.clearDeclarations()` clears declarations and diagnostics; `covers.reset()` remains a backward-compatible alias for clearing declarations.
 
+Declarations and hit state accumulate across repeated `_start()` calls and across multiple instrumented binaries that share one `Covers` instance. Call `registerLoader()` with the loader for the binary you are about to start so source-file pointers decode against the right module. Exact duplicate declarations are idempotent; mismatched duplicate ids are kept as diagnostics.
+
 The repository package smoke test packs the packages, installs them into a throwaway consumer, compiles `tests/test.ts` with these package paths, and runs this loader flow:
 
 ```sh

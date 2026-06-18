@@ -130,4 +130,36 @@ assert.equal(resetCovers.createReport().get("total").coverPoints.length, 1);
 resetCovers.reset();
 assert.equal(resetCovers.createReport().get("total").coverPoints.length, 0);
 
+const multiRunCovers = new Covers();
+const multiRunImports = multiRunCovers.installImports({});
+multiRunCovers.registerLoader({
+  exports: {
+    __getString() {
+      return "src/shared.ts";
+    },
+  },
+});
+multiRunImports.__asCovers.coverDeclare(0, 601, 1, 1, CoverPointType.Block);
+multiRunImports.__asCovers.cover(601);
+
+multiRunCovers.registerLoader({
+  exports: {
+    __getString(pointer) {
+      return pointer === 1 ? "src/shared.ts" : "src/second.ts";
+    },
+  },
+});
+multiRunImports.__asCovers.coverDeclare(1, 601, 1, 1, CoverPointType.Block);
+multiRunImports.__asCovers.coverDeclare(2, 602, 2, 1, CoverPointType.Block);
+multiRunImports.__asCovers.cover(602);
+
+const multiRunReport = multiRunCovers.createReport();
+assert.equal(multiRunReport.get("total").coverPoints.length, 2);
+assert.equal(multiRunReport.get("total").coveredPointsNumber, 2);
+assert.equal(multiRunCovers.diagnostics().length, 0);
+
+multiRunCovers.resetCoverage();
+assert.equal(multiRunCovers.createReport().get("total").coverPoints.length, 2);
+assert.equal(multiRunCovers.createReport().get("total").coveredPointsNumber, 0);
+
 console.log("Cover point registry tests passed.");
