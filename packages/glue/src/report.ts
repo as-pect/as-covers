@@ -56,6 +56,14 @@ export type CoverageReportObject = Record<string, CoverageFileReport>;
 
 export type CoverageReportMap = Map<string, CoverPointReport>;
 
+const compareCoverPoints = (left: CoverPoint, right: CoverPoint): number => {
+  if (left.line !== right.line) return left.line - right.line;
+  if (left.col !== right.col) return left.col - right.col;
+  return left.id - right.id;
+};
+
+const functionName = (point: CoverPoint): string => `as_covers_${point.id}`;
+
 /**
  * Model for reports.
  * Calculates input (CoverPoint[]) and outputs statistics.
@@ -228,4 +236,53 @@ export function toCoverageReportObject(
   }
 
   return result;
+}
+
+/** Builds an LCOV adapter from the same report model as other formats. */
+export function toLCOV(report: CoverageReportMap): string {
+  const records: string[] = ["TN:"];
+
+  for (const [fileName, reportEntry] of report.entries()) {
+    if (fileName === "total") continue;
+
+    records.push(`SF:${fileName}`);
+
+    const functionPoints = reportEntry.coverPoints
+      .filter((point) => point.type === CoverPointType.Function)
+      .sort(compareCoverPoints);
+
+    for (const point of functionPoints) {
+      records.push(`FN:${point.line},${functionName(point)}`);
+    }
+
+    for (const point of functionPoints) {
+      records.push(`FNDA:${point.covered ? 1 : 0},${functionName(point)}`);
+    }
+
+    records.push(`FNF:${functionPoints.length}`);
+    records.push(
+      `FNH:${functionPoints.filter((point) => point.covered).length}`
+    );
+
+    const lineHits = new Map<number, number>();
+    for (const point of reportEntry.coverPoints) {
+      lineHits.set(
+        point.line,
+        (lineHits.get(point.line) ?? 0) + (point.covered ? 1 : 0)
+      );
+    }
+
+    const lines = Array.from(lineHits.entries()).sort(
+      ([leftLine], [rightLine]) => leftLine - rightLine
+    );
+    for (const [line, hits] of lines) {
+      records.push(`DA:${line},${hits}`);
+    }
+
+    records.push(`LF:${lines.length}`);
+    records.push(`LH:${lines.filter(([, hits]) => hits > 0).length}`);
+    records.push("end_of_record");
+  }
+
+  return `${records.join("\n")}\n`;
 }

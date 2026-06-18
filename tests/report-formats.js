@@ -82,6 +82,23 @@ const yamlReport = yaml.parse(covers.toYAML());
 assert.deepEqual(yamlReport, jsonReport);
 
 assert.equal(
+  covers.toLCOV(),
+  "TN:\n" +
+    "SF:src/sample.ts\n" +
+    "FN:4,as_covers_301\n" +
+    "FNDA:1,as_covers_301\n" +
+    "FNF:1\n" +
+    "FNH:1\n" +
+    "DA:1,1\n" +
+    "DA:2,0\n" +
+    "DA:3,1\n" +
+    "DA:4,1\n" +
+    "LF:4\n" +
+    "LH:3\n" +
+    "end_of_record\n"
+);
+
+assert.equal(
   createCsvCovers().toCSV(),
   'File,Covered,ID,Column,Line\n' +
     '"src/a,""b""\n.ts",true,401,6,5\n' +

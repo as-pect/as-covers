@@ -18,6 +18,7 @@ import {
   CoverPointType,
   createCoverageReport,
   toCoverageReportObject,
+  toLCOV as formatLCOV,
 } from "./report.js";
 import type { CoverageReportMap, CoverageReportObject } from "./report.js";
 
@@ -229,6 +230,14 @@ export class Covers {
   public toYAML(): string {
     return yaml.stringify(toCoverageReportObject(this.createReport()));
   }
+  /**
+   * Outputs report as LCOV.
+   * @returns String
+   */
+  public toLCOV(): string {
+    return formatLCOV(this.createReport());
+  }
+
   /**
    * Outputs report as CSV
    * @returns String
