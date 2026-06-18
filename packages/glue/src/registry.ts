@@ -82,7 +82,9 @@ export class CoverPointRegistry {
   }
 
   public diagnostics(): CoverPointDiagnostic[] {
-    return [...this.diagnosticList];
+    return this.diagnosticList.map((diagnostic) =>
+      this.cloneDiagnostic(diagnostic)
+    );
   }
 
   public values(): IterableIterator<CoverPoint> {
@@ -100,6 +102,20 @@ export class CoverPointRegistry {
       left.col === right.col &&
       left.type === right.type
     );
+  }
+
+  private cloneDiagnostic(
+    diagnostic: CoverPointDiagnostic
+  ): CoverPointDiagnostic {
+    if (diagnostic.kind === "unknown-cover") {
+      return { ...diagnostic };
+    }
+
+    return {
+      ...diagnostic,
+      existing: { ...diagnostic.existing },
+      incoming: { ...diagnostic.incoming },
+    };
   }
 
   private recordDiagnostic(diagnostic: CoverPointDiagnostic): void {

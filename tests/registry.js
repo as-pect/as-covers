@@ -66,6 +66,14 @@ assert.deepEqual(registry.diagnostics(), [
     message: "Cover point id 101 was declared for multiple locations.",
   },
 ]);
+const externalDiagnostics = registry.diagnostics();
+externalDiagnostics[0].message = "mutated outside registry";
+externalDiagnostics[0].existing.file = "src/mutated.ts";
+assert.equal(
+  registry.diagnostics()[0].message,
+  "Cover point id 101 was declared for multiple locations."
+);
+assert.equal(registry.diagnostics()[0].existing.file, "src/first.ts");
 
 registry.clearDeclarations();
 assert.equal(registry.size, 0);
