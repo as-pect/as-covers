@@ -49,9 +49,10 @@ wasmModule.exports._start();
 
 process.stdout.write(covers.stringify());
 fs.writeFileSync("./build/lcov.info", covers.toLCOV());
+fs.writeFileSync("./build/coverage.html", covers.toHTML());
 ```
 
-`toLCOV()` writes each cover point as line data and emits function points as synthetic LCOV function records using the cover point id.
+`toLCOV()` writes each cover point as line data and emits function points as synthetic LCOV function records using the cover point id. `toHTML()` writes a dependency-free static summary table.
 
 The repository package smoke test packs the packages, installs them into a throwaway consumer, compiles `tests/test.ts` with these package paths, and runs this loader flow:
 

@@ -38,6 +38,25 @@ function createSampleCovers() {
   return covers;
 }
 
+function createHtmlCovers() {
+  const filePointers = new Map([[1, 'src/<sample>&"report".ts']]);
+  const covers = new Covers();
+  const imports = covers.installImports({});
+  covers.registerLoader({
+    exports: {
+      __getString(pointer) {
+        return filePointers.get(pointer);
+      },
+    },
+  });
+
+  imports.__asCovers.coverDeclare(1, 501, 1, 1, CoverPointType.Block);
+  imports.__asCovers.coverDeclare(1, 502, 2, 1, CoverPointType.Block);
+  imports.__asCovers.cover(501);
+
+  return covers;
+}
+
 function createCsvCovers() {
   const filePointers = new Map([[1, "src/a,\"b\"\n.ts"]]);
   const covers = new Covers();
@@ -97,6 +116,12 @@ assert.equal(
     "LH:3\n" +
     "end_of_record\n"
 );
+
+const htmlReport = createHtmlCovers().toHTML();
+assert.match(htmlReport, /^<!doctype html>/);
+assert.match(htmlReport, /src\/&lt;sample&gt;&amp;&quot;report&quot;\.ts/);
+assert.match(htmlReport, /<td>50%<\/td>/);
+assert.match(htmlReport, /<td>2:1<\/td>/);
 
 assert.equal(
   createCsvCovers().toCSV(),

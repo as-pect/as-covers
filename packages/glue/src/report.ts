@@ -64,6 +64,13 @@ const compareCoverPoints = (left: CoverPoint, right: CoverPoint): number => {
 
 const functionName = (point: CoverPoint): string => `as_covers_${point.id}`;
 
+const escapeHTML = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
 /**
  * Model for reports.
  * Calculates input (CoverPoint[]) and outputs statistics.
@@ -285,4 +292,70 @@ export function toLCOV(report: CoverageReportMap): string {
   }
 
   return `${records.join("\n")}\n`;
+}
+
+/** Builds a dependency-free HTML summary from the shared report model. */
+export function toHTML(report: CoverageReportMap): string {
+  const rows: string[] = [];
+
+  for (const [fileName, reportEntry] of report.entries()) {
+    if (fileName === "total") continue;
+
+    const uncovered = reportEntry.coverPoints
+      .filter((point) => !point.covered)
+      .sort(compareCoverPoints)
+      .map((point) => `${point.line}:${point.col}`)
+      .join(", ");
+
+    rows.push(
+      "      <tr>" +
+        `<th scope="row">${escapeHTML(fileName)}</th>` +
+        `<td>${reportEntry.coveredPercent}</td>` +
+        `<td>${reportEntry.coveredBlockPercent}</td>` +
+        `<td>${reportEntry.coveredFunctionPercent}</td>` +
+        `<td>${reportEntry.coveredExpressionPercent}</td>` +
+        `<td>${reportEntry.coveredPointsNumber}</td>` +
+        `<td>${reportEntry.uncoveredPointsNumber}</td>` +
+        `<td>${escapeHTML(uncovered)}</td>` +
+        "</tr>"
+    );
+  }
+
+  const total = report.get("total");
+  const totalRow = total
+    ? "      <tr><th scope=\"row\">total</th>" +
+      `<td>${total.coveredPercent}</td>` +
+      `<td>${total.coveredBlockPercent}</td>` +
+      `<td>${total.coveredFunctionPercent}</td>` +
+      `<td>${total.coveredExpressionPercent}</td>` +
+      `<td>${total.coveredPointsNumber}</td>` +
+      `<td>${total.uncoveredPointsNumber}</td><td></td></tr>`
+    : "";
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>as-covers coverage report</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem; text-align: left; }
+    thead, tfoot { background: #f3f3f3; }
+  </style>
+</head>
+<body>
+  <h1>as-covers coverage report</h1>
+  <table>
+    <thead><tr><th>File</th><th>Total</th><th>Block</th><th>Function</th><th>Expression</th><th>Covered</th><th>Uncovered</th><th>Uncovered points</th></tr></thead>
+    <tbody>
+${rows.join("\n")}
+    </tbody>
+    <tfoot>
+${totalRow}
+    </tfoot>
+  </table>
+</body>
+</html>
+`;
 }

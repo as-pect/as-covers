@@ -18,6 +18,7 @@ import {
   CoverPointType,
   createCoverageReport,
   toCoverageReportObject,
+  toHTML as formatHTML,
   toLCOV as formatLCOV,
 } from "./report.js";
 import type { CoverageReportMap, CoverageReportObject } from "./report.js";
@@ -236,6 +237,14 @@ export class Covers {
    */
   public toLCOV(): string {
     return formatLCOV(this.createReport());
+  }
+
+  /**
+   * Outputs report as HTML.
+   * @returns String
+   */
+  public toHTML(): string {
+    return formatHTML(this.createReport());
   }
 
   /**
