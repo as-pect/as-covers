@@ -1,9 +1,9 @@
 {
   "tests/test.ts": {
     "overview": {
-      "covered": 18,
-      "uncovered": 8,
-      "total": "69.2%",
+      "covered": 19,
+      "uncovered": 9,
+      "total": "67.9%",
       "types": {
         "block": "75%",
         "function": "62.5%",
@@ -164,6 +164,13 @@
       "column": 17,
       "line": 81
     },
+    "tests/test.ts:88:57": {
+      "covered": false,
+      "id": -1973311063,
+      "file": "tests/test.ts",
+      "column": 57,
+      "line": 88
+    },
     "tests/test.ts:88:69": {
       "covered": true,
       "id": 1859609853,
@@ -177,6 +184,13 @@
       "file": "tests/test.ts",
       "column": 1,
       "line": 88
+    },
+    "tests/test.ts:90:57": {
+      "covered": true,
+      "id": 1790481600,
+      "file": "tests/test.ts",
+      "column": 57,
+      "line": 90
     },
     "tests/test.ts:90:69": {
       "covered": true,

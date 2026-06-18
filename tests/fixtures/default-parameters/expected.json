@@ -1,55 +1,27 @@
 {
-  "status": "pending",
-  "reason": "Known bug: default parameter initializers are not instrumented because the transform misspells visitParameter as visitParemeter. See agent-todo.md Work slice 3.1 — Fix the default parameter visitor bug.",
-  "expected": {
-    "pointCount": 6,
-    "covered": [
-      "tests/fixtures/default-parameters/index.ts:2:1",
-      "tests/fixtures/default-parameters/index.ts:2:35",
-      "tests/fixtures/default-parameters/index.ts:2:43",
-      "tests/fixtures/default-parameters/index.ts:4:1",
-      "tests/fixtures/default-parameters/index.ts:4:44"
-    ],
-    "uncovered": [
-      "tests/fixtures/default-parameters/index.ts:4:32"
-    ],
-    "typeBreakdown": {
-      "function": {
-        "covered": 2,
-        "uncovered": 0
-      },
-      "block": {
-        "covered": 2,
-        "uncovered": 0
-      },
-      "expression": {
-        "covered": 1,
-        "uncovered": 1
-      }
-    }
-  },
-  "current": {
-    "pointCount": 4,
-    "covered": [
-      "tests/fixtures/default-parameters/index.ts:2:1",
-      "tests/fixtures/default-parameters/index.ts:2:43",
-      "tests/fixtures/default-parameters/index.ts:4:1",
-      "tests/fixtures/default-parameters/index.ts:4:44"
-    ],
-    "uncovered": [],
-    "typeBreakdown": {
-      "function": {
-        "covered": 2,
-        "uncovered": 0
-      },
-      "block": {
-        "covered": 2,
-        "uncovered": 0
-      },
-      "expression": {
-        "covered": 0,
-        "uncovered": 0
-      }
+  "pointCount": 6,
+  "covered": [
+    "tests/fixtures/default-parameters/index.ts:2:1",
+    "tests/fixtures/default-parameters/index.ts:2:35",
+    "tests/fixtures/default-parameters/index.ts:2:43",
+    "tests/fixtures/default-parameters/index.ts:4:1",
+    "tests/fixtures/default-parameters/index.ts:4:44"
+  ],
+  "uncovered": [
+    "tests/fixtures/default-parameters/index.ts:4:36"
+  ],
+  "typeBreakdown": {
+    "function": {
+      "covered": 2,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 2,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 1,
+      "uncovered": 1
     }
   }
 }

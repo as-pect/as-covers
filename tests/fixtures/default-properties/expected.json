@@ -1,12 +1,15 @@
 {
-  "pointCount": 4,
+  "pointCount": 6,
   "covered": [
     "tests/fixtures/default-properties/index.ts:2:1",
     "tests/fixtures/default-properties/index.ts:2:69",
     "tests/fixtures/default-properties/index.ts:4:1",
+    "tests/fixtures/default-properties/index.ts:4:57",
     "tests/fixtures/default-properties/index.ts:4:69"
   ],
-  "uncovered": [],
+  "uncovered": [
+    "tests/fixtures/default-properties/index.ts:2:57"
+  ],
   "typeBreakdown": {
     "function": {
       "covered": 2,
@@ -17,8 +20,8 @@
       "uncovered": 0
     },
     "expression": {
-      "covered": 0,
-      "uncovered": 0
+      "covered": 1,
+      "uncovered": 1
     }
   }
 }

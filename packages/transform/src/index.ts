@@ -144,13 +144,14 @@ class CoverTransform extends BaseVisitor {
     }
   }
 
-  visitParemeter(node: ParameterNode): void {
+  visitParameter(node: ParameterNode): void {
     const name = node.range.source.normalizedPath;
 
     super.visitParameter(node);
 
-    if (node.initializer) {
-      const parmLc = this.linecol.fromIndex(node.initializer.range.start);
+    const initializer = node.initializer;
+    if (initializer) {
+      const parmLc = this.linecol.fromIndex(initializer.range.start);
       const parmLine = parmLc.line;
       const parmCol = parmLc.col;
       if (this.ignoredLines.has(parmLine)) return;
@@ -172,6 +173,8 @@ class CoverTransform extends BaseVisitor {
         `(__cover(${parmId}), $$REPLACE_ME)`
       ) as ParenthesizedExpression;
       replacer.visit(parmCoverExpression);
+      (parmCoverExpression.expression as CommaExpression).expressions[1] =
+        initializer;
       node.initializer = parmCoverExpression;
 
       this.globalStatements.push(parmDeclareStatement);
