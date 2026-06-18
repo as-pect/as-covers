@@ -14,7 +14,18 @@
   return h;
 }
 
-/** Create a code point id. */
-export function createPointID(file: string, line: number, col: number, type: string): number {
+/**
+ * Create a signed 32-bit cover point id.
+ *
+ * The AssemblyScript imports currently pass ids as i32 values, so the transform
+ * keeps the existing 32-bit hash strategy for compatibility. The glue registry
+ * records diagnostics if different source locations ever collide on the same id.
+ */
+export function createPointID(
+  file: string,
+  line: number,
+  col: number,
+  type: string
+): number {
   return djb2Hash(`${file}~${line}~${col}~${type}`);
 }
