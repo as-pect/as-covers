@@ -51,7 +51,7 @@ const ignoredRegex = /^[\t ]*\/\/ @as-covers: ignore.*$/gm;
 class CoverTransform extends BaseVisitor {
   private linecol: any = 0;
   private globalStatements: Statement[] = [];
-  public ignoredLines = new Set<number>();
+  private ignoredLines = new Set<number>();
   public entry: Source | null = null;
 
   // Declare properties.
@@ -550,6 +550,9 @@ class CoverTransform extends BaseVisitor {
     this.globalStatements = [];
     // Create linecol function. (Base it off of the file text)
     this.linecol = linecol(text);
+    // Track ignore comments per source so same-numbered lines in other files
+    // still get covered.
+    this.ignoredLines = new Set<number>();
     // Find @as-covers: ignore comments (Regex)
     const foundIgnores = text.matchAll(ignoredRegex);
     // Loop over all the found results

@@ -1,51 +1,24 @@
 {
-  "status": "pending",
-  "reason": "Known bug: @as-covers ignore lines are kept on the transform instance and can leak between sources. See agent-todo.md Work slice 3.2 — Make ignore rules source-local.",
-  "expected": {
-    "pointCount": 4,
-    "covered": [
-      "tests/fixtures/multi-source-ignore/helper.ts:1:1",
-      "tests/fixtures/multi-source-ignore/helper.ts:1:35",
-      "tests/fixtures/multi-source-ignore/helper.ts:4:3",
-      "tests/fixtures/multi-source-ignore/index.ts:6:1"
-    ],
-    "uncovered": [],
-    "typeBreakdown": {
-      "function": {
-        "covered": 1,
-        "uncovered": 0
-      },
-      "block": {
-        "covered": 3,
-        "uncovered": 0
-      },
-      "expression": {
-        "covered": 0,
-        "uncovered": 0
-      }
-    }
-  },
-  "current": {
-    "pointCount": 3,
-    "covered": [
-      "tests/fixtures/multi-source-ignore/helper.ts:1:1",
-      "tests/fixtures/multi-source-ignore/helper.ts:1:35",
-      "tests/fixtures/multi-source-ignore/index.ts:6:1"
-    ],
-    "uncovered": [],
-    "typeBreakdown": {
-      "function": {
-        "covered": 1,
-        "uncovered": 0
-      },
-      "block": {
-        "covered": 2,
-        "uncovered": 0
-      },
-      "expression": {
-        "covered": 0,
-        "uncovered": 0
-      }
+  "pointCount": 4,
+  "covered": [
+    "tests/fixtures/multi-source-ignore/helper.ts:1:1",
+    "tests/fixtures/multi-source-ignore/helper.ts:1:35",
+    "tests/fixtures/multi-source-ignore/helper.ts:4:3",
+    "tests/fixtures/multi-source-ignore/index.ts:6:1"
+  ],
+  "uncovered": [],
+  "typeBreakdown": {
+    "function": {
+      "covered": 1,
+      "uncovered": 0
+    },
+    "block": {
+      "covered": 3,
+      "uncovered": 0
+    },
+    "expression": {
+      "covered": 0,
+      "uncovered": 0
     }
   }
 }

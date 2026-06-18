@@ -28,6 +28,9 @@ Replace `./assembly/index.ts` with your test entry file. The `--lib` path makes 
 
 `Covers` reads declared source-file strings through the `@assemblyscript/loader` string helpers, so instantiate the instrumented wasm with `@assemblyscript/loader` or provide equivalent `exports.__getString` support in a custom loader.
 
+To skip instrumentation for an intentional line, place `// @as-covers: ignore` on the line immediately before it.
+The ignore applies only to the next line in that same source file.
+
 ## Run and report
 
 ```ts
