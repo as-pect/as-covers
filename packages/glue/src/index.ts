@@ -151,7 +151,13 @@ export class Covers {
     coverType: CoverPointType
   ): void {
     // Get filePath. Needs --exportRuntime flag.
-    const filePath = this.loader!.exports.__getString(filePtr);
+    const getString = this.loader?.exports?.__getString;
+    if (typeof getString !== "function") {
+      throw new Error(
+        "Covers.registerLoader(loader) must be called before coverage declarations run."
+      );
+    }
+    const filePath = getString.call(this.loader.exports, filePtr);
     // Ignore if it shouldn't be covered.
     if (!mm.isMatch(filePath, this.options.files)) {
       this.ignoredCoverPointIds.add(id);

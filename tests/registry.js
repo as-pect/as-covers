@@ -96,6 +96,20 @@ assert.throws(
 );
 assert.equal(registry.diagnostics().at(-1).id, 202);
 
+const coversWithoutLoader = new Covers();
+const importsWithoutLoader = coversWithoutLoader.installImports({});
+assert.throws(
+  () =>
+    importsWithoutLoader.__asCovers.coverDeclare(
+      0,
+      302,
+      1,
+      1,
+      CoverPointType.Block
+    ),
+  /Covers\.registerLoader\(loader\) must be called before coverage declarations run\./
+);
+
 const covers = new Covers();
 const imports = covers.installImports({});
 imports.__asCovers.cover(303);
