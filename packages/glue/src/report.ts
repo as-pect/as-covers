@@ -71,6 +71,17 @@ const escapeHTML = (value: string): string =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+const coveragePointKey = (
+  fileReport: CoverageFileReport,
+  location: string,
+  id: number
+): string => {
+  if (!Object.prototype.hasOwnProperty.call(fileReport, location)) {
+    return location;
+  }
+  return `${location}#${id}`;
+};
+
 /**
  * Model for reports.
  * Calculates input (CoverPoint[]) and outputs statistics.
@@ -228,9 +239,8 @@ export function toCoverageReportObject(
     };
 
     for (const coverPoint of reportEntry.coverPoints) {
-      fileReport[
-        `${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`
-      ] = {
+      const location = `${coverPoint.file}:${coverPoint.line}:${coverPoint.col}`;
+      fileReport[coveragePointKey(fileReport, location, coverPoint.id)] = {
         covered: coverPoint.covered,
         id: coverPoint.id,
         file: coverPoint.file,

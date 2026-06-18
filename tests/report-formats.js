@@ -82,6 +82,25 @@ function createCsvCovers() {
   return covers;
 }
 
+function createDuplicateLocationCovers() {
+  const filePointers = new Map([[1, "src/duplicate-location.ts"]]);
+  const covers = new Covers();
+  const imports = covers.installImports({});
+  covers.registerLoader({
+    exports: {
+      __getString(pointer) {
+        return filePointers.get(pointer);
+      },
+    },
+  });
+
+  imports.__asCovers.coverDeclare(1, 701, 3, 5, CoverPointType.Block);
+  imports.__asCovers.coverDeclare(1, 702, 3, 5, CoverPointType.Expression);
+  imports.__asCovers.cover(701);
+
+  return covers;
+}
+
 function parseLCOV(output) {
   const records = [];
   let current = null;
@@ -193,6 +212,15 @@ assert.equal(jsonReport.total, undefined);
 
 const yamlReport = yaml.parse(covers.toYAML());
 assert.deepEqual(yamlReport, jsonReport);
+
+const duplicateLocationReport = createDuplicateLocationCovers().toJSON();
+const duplicateLocationEntries = Object.values(
+  duplicateLocationReport["src/duplicate-location.ts"]
+).filter((entry) => entry.id !== undefined);
+assert.deepEqual(
+  duplicateLocationEntries.map((entry) => entry.id).sort(),
+  [701, 702]
+);
 
 assert.deepEqual(parseLCOV(covers.toLCOV()), [
   {
