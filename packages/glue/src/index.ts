@@ -13,6 +13,7 @@ import { table } from "table";
  */
 import yaml from "yaml";
 
+import { CoverPointRegistry } from "./registry.js";
 import {
   CoverPoint,
   CoverPointType,
@@ -89,7 +90,7 @@ interface ICoversOptions {
  * The main class. It houses the initializer, imports, and bindings.
  */
 export class Covers {
-  private coverPoints = new Map<number, CoverPoint>();
+  private registry = new CoverPointRegistry();
   // Its any because I can't find the type.
   private loader: any;
 
@@ -137,16 +138,13 @@ export class Covers {
     col: number,
     coverType: CoverPointType
   ): void {
-    // Cover points are immutable. (so it's already been added)
-    if (this.coverPoints.has(id)) return;
     // Get filePath. Needs --exportRuntime flag.
     const filePath = this.loader!.exports.__getString(filePtr);
     // Ignore if it shouldn't be covered.
     if (!mm.isMatch(filePath, this.options.files)) return;
-    // Create new CoverPoint and add it to the main points.
-    let coverPoint = new CoverPoint(filePath, line, col, id, coverType);
-    // Sets CoverPoint inside of this.coverPoints
-    this.coverPoints.set(id, coverPoint);
+    // Create new CoverPoint and add it to the registry.
+    const coverPoint = new CoverPoint(filePath, line, col, id, coverType);
+    this.registry.declare(coverPoint);
   }
 
   /**
@@ -154,12 +152,7 @@ export class Covers {
    * @param id - The id of the point.
    */
   private cover(id: number): void {
-    // If it should be ignored, return.
-    if (!this.coverPoints.has(id)) return;
-    // Grab the CoverPoint
-    let coverPoint = this.coverPoints.get(id)!;
-    // Set it to covered
-    coverPoint.covered = true;
+    this.registry.cover(id);
   }
 
   /**
@@ -169,7 +162,7 @@ export class Covers {
    */
   public reset(): void {
     // Clear (Very very unsafe!)
-    this.coverPoints.clear();
+    this.registry.reset();
   }
 
   /**
@@ -179,7 +172,7 @@ export class Covers {
    * @returns Map<string, CoverPointReport>
    */
   public createReport(): CoverageReportMap {
-    return createCoverageReport(this.coverPoints.values());
+    return createCoverageReport(this.registry.values());
   }
 
   /**
