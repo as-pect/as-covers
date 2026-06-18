@@ -4,11 +4,13 @@
   "description": "Code coverage transform for AssemblyScript",
   "main": "index.js",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "postinstall": "lerna bootstrap --hoist",
     "test": "run-s build:src build:test run:test",
     "test:update-snapshots": "run-s build:src build:test run:test-update-snapshots",
-    "build:src": "lerna run tsc",
+    "build:src": "npm run tsc --workspace @as-covers/glue && npm run tsc --workspace @as-covers/transform",
     "build:test": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/lib/index.js --textFile ./tests/output/output.wat --outFile ./tests/output/output.wasm --exportStart _start",
     "run:test": "node --enable-source-maps tests/test",
     "run:test-update-snapshots": "node --enable-source-maps tests/test --create"
@@ -23,7 +25,6 @@
     "assemblyscript": "^0.25.0",
     "blessed": "^0.1.81",
     "colors": "^1.4.0",
-    "lerna": "^6.1.0",
     "line-column": "^1.0.2",
     "npm-run-all": "^4.1.5",
     "ts-node": "^10.9.1",
