@@ -14,6 +14,7 @@ import { table } from "table";
 import yaml from "yaml";
 
 import { CoverPointRegistry } from "./registry.js";
+import type { CoverPointDiagnostic } from "./registry.js";
 import {
   CoverPoint,
   CoverPointType,
@@ -32,6 +33,12 @@ export type {
   CoverageReportMap,
   CoverageReportObject,
 } from "./report.js";
+export type {
+  CoverPointCollisionDiagnostic,
+  CoverPointDiagnostic,
+  CoverPointDiagnosticLocation,
+  UnknownCoverDiagnostic,
+} from "./registry.js";
 
 /** This configuration is used for ascii table output. */
 const tableConfig = {
@@ -84,6 +91,7 @@ export type CoverageRenderConfiguration = {
  */
 interface ICoversOptions {
   files?: Array<string>;
+  strict?: boolean;
 }
 
 /**
@@ -91,14 +99,17 @@ interface ICoversOptions {
  */
 export class Covers {
   private registry = new CoverPointRegistry();
+  public options: ICoversOptions;
   // Its any because I can't find the type.
   private loader: any;
 
-  constructor(
-    public options: ICoversOptions = {
+  constructor(options: ICoversOptions = {}) {
+    this.options = {
       files: ["**/*.*"],
-    }
-  ) {}
+      strict: false,
+      ...options,
+    };
+  }
 
   /**
    * Installs the as-covers imports into the loaded's imports object.
@@ -152,7 +163,7 @@ export class Covers {
    * @param id - The id of the point.
    */
   private cover(id: number): void {
-    this.registry.cover(id);
+    this.registry.cover(id, this.options.strict === true);
   }
 
   /**
@@ -163,6 +174,10 @@ export class Covers {
   public reset(): void {
     // Clear (Very very unsafe!)
     this.registry.reset();
+  }
+
+  public diagnostics(): CoverPointDiagnostic[] {
+    return this.registry.diagnostics();
   }
 
   /**

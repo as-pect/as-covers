@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { CoverPoint, CoverPointType } from "../packages/glue/lib/index.js";
+import { Covers, CoverPoint, CoverPointType } from "../packages/glue/lib/index.js";
 import { CoverPointRegistry } from "../packages/glue/lib/registry.js";
 
 const registry = new CoverPointRegistry();
@@ -20,9 +20,6 @@ assert.deepEqual(registry.diagnostics(), []);
 
 registry.cover(101);
 assert.equal(firstPoint.covered, true);
-
-registry.cover(999);
-assert.equal(registry.size, 1);
 
 const exactDuplicatePoint = new CoverPoint(
   "src/first.ts",
@@ -68,7 +65,40 @@ assert.deepEqual(registry.diagnostics(), [
 registry.reset();
 assert.equal(registry.size, 0);
 assert.deepEqual(registry.diagnostics(), []);
+
 registry.cover(101);
 assert.equal(registry.size, 0);
+assert.deepEqual(registry.diagnostics(), [
+  {
+    kind: "unknown-cover",
+    id: 101,
+    message: "Unknown cover point id 101 was executed before declaration.",
+  },
+]);
+
+assert.throws(
+  () => registry.cover(202, true),
+  /Unknown cover point id 202 was executed before declaration\./
+);
+assert.equal(registry.diagnostics().at(-1).id, 202);
+
+const covers = new Covers();
+const imports = covers.installImports({});
+imports.__asCovers.cover(303);
+assert.deepEqual(covers.diagnostics(), [
+  {
+    kind: "unknown-cover",
+    id: 303,
+    message: "Unknown cover point id 303 was executed before declaration.",
+  },
+]);
+
+const strictCovers = new Covers({ strict: true });
+const strictImports = strictCovers.installImports({});
+assert.throws(
+  () => strictImports.__asCovers.cover(404),
+  /Unknown cover point id 404 was executed before declaration\./
+);
+assert.equal(strictCovers.diagnostics()[0].id, 404);
 
 console.log("Cover point registry tests passed.");

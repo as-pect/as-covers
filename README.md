@@ -54,6 +54,8 @@ fs.writeFileSync("./build/coverage.html", covers.toHTML());
 
 `toLCOV()` writes each cover point as line data and emits function points as synthetic LCOV function records using the cover point id. `toHTML()` writes a dependency-free static summary table.
 
+Use `covers.diagnostics()` to inspect non-fatal registry issues such as id collisions or `cover(id)` calls that ran before a declaration. Pass `new Covers({ strict: true })` to throw on unknown `cover(id)` events instead of recording only a diagnostic.
+
 The repository package smoke test packs the packages, installs them into a throwaway consumer, compiles `tests/test.ts` with these package paths, and runs this loader flow:
 
 ```sh
