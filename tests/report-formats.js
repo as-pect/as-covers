@@ -199,6 +199,11 @@ assert.equal(liveReport.coveredPointsNumber, 2);
 assert.equal(liveReport.coveredPercent, "100%");
 assert.equal(liveReport.coveredBlockPercent, "100%");
 
+const isolatedCovers = createCsvCovers();
+const isolatedReport = isolatedCovers.createReport().get("total");
+isolatedReport.coverPoints[0].covered = false;
+assert.equal(isolatedCovers.createReport().get("total").coveredPointsNumber, 1);
+
 assert.deepEqual(parseLCOV(covers.toLCOV()), [
   {
     sourceFile: "src/sample.ts",

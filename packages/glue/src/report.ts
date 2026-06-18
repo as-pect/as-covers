@@ -62,6 +62,18 @@ const compareCoverPoints = (left: CoverPoint, right: CoverPoint): number => {
   return left.id - right.id;
 };
 
+const cloneCoverPoint = (point: CoverPoint): CoverPoint => {
+  const clone = new CoverPoint(
+    point.file,
+    point.line,
+    point.col,
+    point.id,
+    point.type
+  );
+  clone.covered = point.covered;
+  return clone;
+};
+
 const functionName = (point: CoverPoint): string => `as_covers_${point.id}`;
 
 const escapeHTML = (value: string): string =>
@@ -204,14 +216,15 @@ export function createCoverageReport(
   const total = new CoverPointReport("total");
 
   for (const coverPoint of coverPoints) {
-    const fileName = coverPoint.file;
+    const pointSnapshot = cloneCoverPoint(coverPoint);
+    const fileName = pointSnapshot.file;
 
     if (!results.has(fileName))
       results.set(fileName, new CoverPointReport(fileName));
 
     const report = results.get(fileName)!;
-    report.coverPoints.push(coverPoint);
-    total.coverPoints.push(coverPoint);
+    report.coverPoints.push(pointSnapshot);
+    total.coverPoints.push(cloneCoverPoint(pointSnapshot));
   }
 
   results.set("total", total);
