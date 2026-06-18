@@ -16,14 +16,12 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "csv-stringify": "^6.2.3",
     "micromatch": "^4.0.5",
     "table": "^6.8.1",
     "yaml": "^2.1.3"
   },
   "devDependencies": {
-    "@assemblyscript/loader": "^0.25.0",
-    "@types/table": "^6.3.2"
+    "@assemblyscript/loader": "^0.25.0"
   },
   "files": [
     "lib"

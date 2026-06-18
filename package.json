@@ -36,10 +36,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@types/chalk": "^2.2.0",
     "@types/node": "^18.11.13",
-    "@types/text-table": "^0.2.2",
-    "chalk": "^5.2.0",
     "micromatch": "^4.0.5",
     "table": "^6.8.1",
     "yaml": "^2.1.3"
