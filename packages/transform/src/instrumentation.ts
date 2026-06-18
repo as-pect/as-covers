@@ -10,7 +10,6 @@ import {
 
 import { SimpleParser } from "visitor-as";
 import { RangeTransform } from "visitor-as/dist/transformRange.js";
-import linecol from "line-column";
 
 import { createPointID } from "./util.js";
 
@@ -26,6 +25,38 @@ interface SourceLocation {
   col: number;
 }
 
+class SourceLocationFinder {
+  private readonly lineStarts: number[] = [0];
+
+  constructor(private readonly sourceText: string) {
+    for (let index = 0; index < sourceText.length; index++) {
+      if (sourceText.charCodeAt(index) === 10) this.lineStarts.push(index + 1);
+    }
+  }
+
+  fromIndex(index: number): SourceLocation {
+    if (index < 0 || index >= this.sourceText.length || Number.isNaN(index)) {
+      throw new RangeError(`Source index ${index} is out of range.`);
+    }
+
+    let low = 0;
+    let high = this.lineStarts.length - 1;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      if ((this.lineStarts[mid] ?? 0) <= index) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    return {
+      line: low + 1,
+      col: index - this.lineStarts[low]! + 1,
+    };
+  }
+}
+
 interface CoverPointDetails extends SourceLocation {
   file: string;
   id: number;
@@ -34,13 +65,13 @@ interface CoverPointDetails extends SourceLocation {
 
 export class SourceInstrumentation {
   public readonly fileName: string;
-  private readonly linecol: any;
+  private readonly linecol: SourceLocationFinder;
   private readonly ignoredLines = new Set<number>();
   private readonly declarations: Statement[] = [];
 
   constructor(source: Source) {
     this.fileName = source.normalizedPath;
-    this.linecol = linecol(source.text);
+    this.linecol = new SourceLocationFinder(source.text);
 
     for (const ignored of source.text.matchAll(ignoredRegex)) {
       this.ignoredLines.add(this.linecol.fromIndex(ignored.index!).line + 1);

@@ -16,9 +16,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "micromatch": "^4.0.5",
-    "table": "^6.8.1",
-    "yaml": "^2.1.3"
+    "micromatch": "^4.0.5"
   },
   "devDependencies": {
     "@assemblyscript/loader": "^0.25.0"

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import yaml from "yaml";
 import { Covers, CoverPointType } from "../packages/glue/lib/index.js";
 
 function createCovers(file, points, coveredIds) {
@@ -179,8 +178,44 @@ assert.equal(jsonReport["src/sample.ts"]["src/sample.ts:1:1"].covered, true);
 assert.equal(jsonReport["src/sample.ts"]["src/sample.ts:2:1"].covered, false);
 assert.equal(jsonReport.total, undefined);
 
-const yamlReport = yaml.parse(covers.toYAML());
-assert.deepEqual(yamlReport, jsonReport);
+assert.equal(
+  covers.toYAML(),
+  `src/sample.ts:
+  overview:
+    covered: 3
+    uncovered: 1
+    total: "75%"
+    types:
+      block: "100%"
+      function: "100%"
+      expression: "50%"
+  "src/sample.ts:1:1":
+    covered: true
+    id: 101
+    file: "src/sample.ts"
+    column: 1
+    line: 1
+  "src/sample.ts:2:1":
+    covered: false
+    id: 102
+    file: "src/sample.ts"
+    column: 1
+    line: 2
+  "src/sample.ts:3:1":
+    covered: true
+    id: 201
+    file: "src/sample.ts"
+    column: 1
+    line: 3
+  "src/sample.ts:4:1":
+    covered: true
+    id: 301
+    file: "src/sample.ts"
+    column: 1
+    line: 4
+`
+);
+assert.match(createCsvCovers().toYAML(), /"src\/a,\\"b\\"\\n\.ts":/);
 
 const duplicateLocationReport = createDuplicateLocationCovers().toJSON();
 const duplicateLocationEntries = Object.values(

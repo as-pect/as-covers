@@ -8,11 +8,11 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "run-s build:src run:test-types run:test-registry run:test-report build:test run:test run:test-fixtures",
-    "test:fixtures": "run-s build:src run:test-fixtures",
+    "test": "npm run build:src && npm run run:test-types && npm run run:test-registry && npm run run:test-report && npm run build:test && npm run run:test && npm run run:test-fixtures",
+    "test:fixtures": "npm run build:src && npm run run:test-fixtures",
     "test:package": "node tests/package-smoke.js",
-    "test:update-snapshots": "run-s build:src build:test run:test-update-snapshots",
-    "release:check": "run-s test test:package",
+    "test:update-snapshots": "npm run build:src && npm run build:test && npm run run:test-update-snapshots",
+    "release:check": "npm run test && npm run test:package",
     "build:src": "npm run tsc --workspace @as-covers/glue && npm run tsc --workspace @as-covers/transform",
     "build:test": "asc ./tests/test.ts --lib packages/assembly/index.ts --transform ./packages/transform/lib/index.js --textFile ./tests/output/output.wat --outFile ./tests/output/output.wasm --exportStart _start",
     "run:test": "node --enable-source-maps tests/test",
@@ -30,14 +30,6 @@
   "devDependencies": {
     "@assemblyscript/loader": "^0.25.0",
     "assemblyscript": "^0.25.0",
-    "line-column": "^1.0.2",
-    "npm-run-all": "^4.1.5",
     "typescript": "^4.9.4"
-  },
-  "dependencies": {
-    "@types/node": "^18.11.13",
-    "micromatch": "^4.0.5",
-    "table": "^6.8.1",
-    "yaml": "^2.1.3"
   }
 }

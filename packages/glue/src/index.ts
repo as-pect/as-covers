@@ -3,16 +3,6 @@
  */
 // @ts-ignore
 import mm from "micromatch";
-/**
- * Import `table` module for report text output
- */
-import { table } from "table";
-
-/**
- * Import YAML formatter
- */
-import yaml from "yaml";
-
 import { CoverPointRegistry } from "./registry.js";
 import type { CoverPointDiagnostic } from "./registry.js";
 import {
@@ -22,6 +12,7 @@ import {
   toCoverageReportObject,
   toHTML as formatHTML,
   toLCOV as formatLCOV,
+  toYAML as formatYAML,
 } from "./report.js";
 import type { CoverageReportMap, CoverageReportObject } from "./report.js";
 
@@ -40,28 +31,80 @@ export type {
   UnknownCoverDiagnostic,
 } from "./registry.js";
 
-/** This configuration is used for ascii table output. */
-const tableConfig = {
-  border: {
-    topBody: `─`,
-    topJoin: `┬`,
-    topLeft: `┌`,
-    topRight: `┐`,
+const tableBorder = {
+  topBody: `─`,
+  topJoin: `┬`,
+  topLeft: `┌`,
+  topRight: `┐`,
 
-    bottomBody: `─`,
-    bottomJoin: `┴`,
-    bottomLeft: `└`,
-    bottomRight: `┘`,
+  bottomBody: `─`,
+  bottomJoin: `┴`,
+  bottomLeft: `└`,
+  bottomRight: `┘`,
 
-    bodyLeft: `│`,
-    bodyRight: `│`,
-    bodyJoin: `│`,
+  bodyLeft: `│`,
+  bodyRight: `│`,
+  bodyJoin: `│`,
 
-    joinBody: `─`,
-    joinLeft: `├`,
-    joinRight: `┤`,
-    joinJoin: `┼`,
-  },
+  joinBody: `─`,
+  joinLeft: `├`,
+  joinRight: `┤`,
+  joinJoin: `┼`,
+};
+
+const renderTableSeparator = (
+  widths: number[],
+  left: string,
+  body: string,
+  join: string,
+  right: string
+): string =>
+  `${left}${widths
+    .map((width) => body.repeat(width + 2))
+    .join(join)}${right}\n`;
+
+const renderTableRow = (row: string[], widths: number[]): string =>
+  `${tableBorder.bodyLeft}${row
+    .map((cell, index) => ` ${cell.padEnd(widths[index] ?? 0)} `)
+    .join(tableBorder.bodyJoin)}${tableBorder.bodyRight}\n`;
+
+const renderTextTable = (rows: string[][]): string => {
+  if (rows.length === 0) return "";
+
+  const columnCount = Math.max(...rows.map((row) => row.length));
+  const normalizedRows = rows.map((row) =>
+    Array.from({ length: columnCount }, (_, index) => row[index] ?? "")
+  );
+  const widths = Array.from({ length: columnCount }, (_, index) =>
+    Math.max(...normalizedRows.map((row) => row[index]?.length ?? 0))
+  );
+
+  let result = renderTableSeparator(
+    widths,
+    tableBorder.topLeft,
+    tableBorder.topBody,
+    tableBorder.topJoin,
+    tableBorder.topRight
+  );
+  result += renderTableRow(normalizedRows[0] ?? [], widths);
+  result += renderTableSeparator(
+    widths,
+    tableBorder.joinLeft,
+    tableBorder.joinBody,
+    tableBorder.joinJoin,
+    tableBorder.joinRight
+  );
+  for (const row of normalizedRows.slice(1)) {
+    result += renderTableRow(row, widths);
+  }
+  result += renderTableSeparator(
+    widths,
+    tableBorder.bottomLeft,
+    tableBorder.bottomBody,
+    tableBorder.bottomJoin,
+    tableBorder.bottomRight
+  );
+  return result;
 };
 
 /**
@@ -227,37 +270,24 @@ export class Covers {
   public stringify(): string {
     // Grab report statistics
     const report = this.createReport();
-    // Returns an array formatted with the `table` module. Makes it look really nice!
-    return table(
-      [
-        // Main titles for columns
-        ["File", "Total", "Block", "Func", "Expr", "Uncovered"],
-        // Loops over all files and generates a report for each.
-        ...Array.from(report).map(([file, rep], i) => {
-          const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered);
-          return [
-            // File name
-            file,
-            // Total covered for that file (percent)
-            rep.coveredPercent,
-            // Block percent
-            rep.coveredBlockPercent,
-            // Func percentage
-            rep.coveredFunctionPercent,
-            // Expr Percentage
-            rep.coveredExpressionPercent,
-            // Some stuff to limit uncovered points length.
-            i === report.size - 1
-              ? ""
-              : uncoveredPoints.length > 6
-              ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")}...`
-              : uncoveredPoints.map(linecolText).join(", "),
-          ];
-        }),
-      ],
-      // Table config. (top)
-      tableConfig
-    );
+    return renderTextTable([
+      ["File", "Total", "Block", "Func", "Expr", "Uncovered"],
+      ...Array.from(report).map(([file, rep], i) => {
+        const uncoveredPoints = rep.coverPoints.filter((val) => !val.covered);
+        return [
+          file,
+          rep.coveredPercent,
+          rep.coveredBlockPercent,
+          rep.coveredFunctionPercent,
+          rep.coveredExpressionPercent,
+          i === report.size - 1
+            ? ""
+            : uncoveredPoints.length > 6
+            ? `${uncoveredPoints.slice(0, 6).map(linecolText).join(", ")}...`
+            : uncoveredPoints.map(linecolText).join(", "),
+        ];
+      }),
+    ]);
   }
 
   /**
@@ -266,7 +296,7 @@ export class Covers {
    */
 
   public toYAML(): string {
-    return yaml.stringify(toCoverageReportObject(this.createReport()));
+    return formatYAML(this.createReport());
   }
   /**
    * Outputs report as LCOV.

@@ -94,6 +94,81 @@ const coveragePointKey = (
   return `${location}#${id}`;
 };
 
+const plainYAMLKey = /^[A-Za-z0-9_./][A-Za-z0-9_./-]*$/;
+
+const isYAMLRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isYAMLCollection = (value: unknown): boolean =>
+  Array.isArray(value) || isYAMLRecord(value);
+
+const quoteYAMLString = (value: string): string => JSON.stringify(value);
+
+const formatYAMLKey = (value: string): string =>
+  plainYAMLKey.test(value) ? value : quoteYAMLString(value);
+
+const formatYAMLScalar = (value: unknown): string => {
+  if (value === null || typeof value === "undefined") return "null";
+
+  switch (typeof value) {
+    case "boolean":
+      return value ? "true" : "false";
+    case "number":
+      return Number.isFinite(value)
+        ? String(value)
+        : quoteYAMLString(String(value));
+    case "string":
+      return quoteYAMLString(value);
+    default:
+      return quoteYAMLString(String(value));
+  }
+};
+
+const formatInlineYAMLCollection = (value: unknown): string | null => {
+  if (Array.isArray(value) && value.length === 0) return "[]";
+  if (isYAMLRecord(value) && Object.keys(value).length === 0) return "{}";
+  return null;
+};
+
+const stringifyYAMLNode = (value: unknown, indent = 0): string => {
+  const prefix = " ".repeat(indent);
+  const inline = formatInlineYAMLCollection(value);
+  if (inline !== null) return `${prefix}${inline}\n`;
+
+  if (Array.isArray(value)) {
+    let result = "";
+    for (const item of value) {
+      const itemInline = formatInlineYAMLCollection(item);
+      if (itemInline !== null || !isYAMLCollection(item)) {
+        result += `${prefix}- ${itemInline ?? formatYAMLScalar(item)}\n`;
+      } else {
+        result += `${prefix}-\n${stringifyYAMLNode(item, indent + 2)}`;
+      }
+    }
+    return result;
+  }
+
+  if (isYAMLRecord(value)) {
+    let result = "";
+    for (const [key, entryValue] of Object.entries(value)) {
+      const entryInline = formatInlineYAMLCollection(entryValue);
+      if (entryInline !== null || !isYAMLCollection(entryValue)) {
+        result += `${prefix}${formatYAMLKey(key)}: ${
+          entryInline ?? formatYAMLScalar(entryValue)
+        }\n`;
+      } else {
+        result += `${prefix}${formatYAMLKey(key)}:\n${stringifyYAMLNode(
+          entryValue,
+          indent + 2
+        )}`;
+      }
+    }
+    return result;
+  }
+
+  return `${prefix}${formatYAMLScalar(value)}\n`;
+};
+
 /**
  * Model for reports.
  * Calculates input (CoverPoint[]) and outputs statistics.
@@ -269,6 +344,11 @@ export function toCoverageReportObject(
   }
 
   return result;
+}
+
+/** Builds a dependency-free YAML adapter from the shared report model. */
+export function toYAML(report: CoverageReportMap): string {
+  return stringifyYAMLNode(toCoverageReportObject(report));
 }
 
 /** Builds an LCOV adapter from the same report model as other formats. */
