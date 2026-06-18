@@ -3,8 +3,10 @@
   "version": "0.4.2",
   "description": "Glue code for code coverage using node.js",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "type": "module",
   "scripts": {
+    "prepack": "npm run tsc",
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

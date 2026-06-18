@@ -3,8 +3,10 @@
   "version": "0.4.2",
   "description": "The transform that enables code coverage for assemblyscript",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "type": "module",
   "scripts": {
+    "prepack": "npm run tsc",
     "tsc": "tsc",
     "test": "node test/index.js"
   },
